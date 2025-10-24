@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Comun\ServiceCommon.csproj" />
     <ProjectReference Include="..\ModuleClient\ServiceClient.csproj" />
+    <ProjectReference Include="..\ServiceCommon\ServiceCommon.csproj" />
     <ProjectReference Include="..\ServiceLot\ServiceLot.csproj" />
     <ProjectReference Include="..\ServiceProvider\ServiceProvider.csproj" />
     <ProjectReference Include="..\ServiceUser\ServiceUser.csproj" />
