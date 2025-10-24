@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Comun\ServiceCommon.csproj" />
+    <ProjectReference Include="..\ModuleClient\ServiceClient.csproj" />
+    <ProjectReference Include="..\ServiceLot\ServiceLot.csproj" />
+    <ProjectReference Include="..\ServiceProvider\ServiceProvider.csproj" />
+    <ProjectReference Include="..\ServiceUser\ServiceUser.csproj" />
+  </ItemGroup>
+
+</Project>
