@@ -1,0 +1,107 @@
+﻿@page
+@model FarmaView.Pages.Client.IndexClientModel
+@{
+    ViewData["Title"] = "Clientes";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <h2 class="fw-bold text-success mb-0">
+        <i class="bi bi-people-fill me-2"></i> Clientes
+    </h2>
+
+    <a asp-page="/Client/Create" class="btn btn-success shadow-sm rounded-pill px-4 d-flex align-items-center">
+        <i class="bi bi-plus-circle me-2"></i> Nuevo Cliente
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] is string ok && !string.IsNullOrWhiteSpace(ok))
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> @ok
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] is string err && !string.IsNullOrWhiteSpace(err))
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> @err
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0 text-center">
+            <thead class="table-success text-dark">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>NIT</th>
+                    <th>Email</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Clients is not null && Model.Clients.Any())
+                {
+                    @foreach (var c in Model.Clients)
+                    {
+                        <tr>
+                            <td>@c.first_name</td>
+                            <td>@c.last_name</td>
+                            <td>@c.nit</td>
+                            <td>@c.email</td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-2">
+
+                                    <a asp-page="/Client/Details" asp-route-id="@c.id"
+                                       class="btn btn-sm btn-outline-info rounded-circle"
+                                       title="Detalles">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+
+                                    <a asp-page="/Client/Edit" asp-route-id="@Model.EncryptedIds[c.id]"
+                                       class="btn btn-sm btn-outline-warning rounded-circle"
+                                       title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger rounded-circle"
+                                            title="Eliminar"
+                                            onclick="openDeleteClientModal(@c.id, '@c.first_name @c.last_name')">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox me-2"></i> No hay clientes registrados.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<partial name="_DeleteClientModalPartial" />
+
+@section Scripts {
+    <script>
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteClientModal'));
+
+        function openDeleteClientModal(id, nombreCompleto) {
+            document.getElementById('deleteClientId').value = id;
+            document.getElementById('deleteClientMessage').textContent =
+                `¿Estás seguro de eliminar al cliente ${nombreCompleto}?`;
+            deleteModal.show();
+        }
+    </script>
+}

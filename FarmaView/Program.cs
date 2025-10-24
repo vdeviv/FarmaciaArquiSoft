@@ -1,7 +1,30 @@
+
+using ServiceClient.Application;
+using ServiceClient.Infrastructure;
+using ServiceCommon.Application;
+using ServiceCommon.Domain.Ports;
+using ServiceCommon.Infrastructure.Data;
+using ServiceUser.Application.Services;
+using ServiceUser.Domain;
+using ClientEntity = ServiceClient.Domain.Client;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+DatabaseConnection.Initialize(builder.Configuration);
+
 builder.Services.AddRazorPages();
+
+builder.Services.AddSingleton<IEncryptionService, ServiceCommon.Application.EncryptionService>();
+
+
+
+
+builder.Services.AddScoped<IRepository<ClientEntity>, ClientRepository>();
+
+
+// 2. Registro del Servicio de Cliente (IClientService <-- ClientService)
+builder.Services.AddScoped<IClientService, ClientService>();
+
 
 var app = builder.Build();
 

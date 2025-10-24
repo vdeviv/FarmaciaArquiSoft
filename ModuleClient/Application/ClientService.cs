@@ -13,21 +13,15 @@ namespace ServiceClient.Application
     public class ClientService : IClientService
     {
         private readonly IRepository<Client> _clientRepository; // Usa Client
-        private readonly IUserService _userService;
 
-        public ClientService(IRepository<Client> clientRepository, IUserService userService) // Usa Client
+        public ClientService(IRepository<Client> clientRepository) // Usa Client
         {
             _clientRepository = clientRepository;
-            _userService = userService;
         }
 
         public async Task<Client> RegisterAsync(ClientCreateDto dto, int actorId) // Usa Client
         {
-            var actor = await _userService.GetByIdAsync(actorId);
-            if (actor == null || !_userService.CanPerformAction(actor, "create_client"))
-            {
-                throw new InvalidOperationException("El usuario no tiene permisos para registrar clientes.");
-            }
+           
 
             var newClient = new Client // Usa Client
             {
@@ -56,11 +50,7 @@ namespace ServiceClient.Application
 
         public async Task UpdateAsync(int id, ClientUpdateDto dto, int actorId)
         {
-            var actor = await _userService.GetByIdAsync(actorId);
-            if (actor == null || !_userService.CanPerformAction(actor, "update_client"))
-            {
-                throw new InvalidOperationException("El usuario no tiene permisos para actualizar clientes.");
-            }
+            
 
             var clientReference = new Client { id = id }; // Usa Client
             var existingClient = await _clientRepository.GetById(clientReference);
@@ -80,11 +70,7 @@ namespace ServiceClient.Application
 
         public async Task SoftDeleteAsync(int id, int actorId)
         {
-            var actor = await _userService.GetByIdAsync(actorId);
-            if (actor == null || !_userService.CanPerformAction(actor, "delete_client"))
-            {
-                throw new InvalidOperationException("El usuario no tiene permisos para eliminar clientes.");
-            }
+           
 
             var clientReference = new Client { id = id }; // Usa Client
             var existingClient = await _clientRepository.GetById(clientReference);

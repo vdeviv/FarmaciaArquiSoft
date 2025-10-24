@@ -1,15 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Comun\ServiceCommon.csproj" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    
     <ProjectReference Include="..\ModuleClient\ServiceClient.csproj" />
-    <ProjectReference Include="..\ServiceCommon\ServiceCommon.csproj" />
+    
+    <ProjectReference Include="..\ServiceCommon\ServiceCommon.csproj">
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceLot\ServiceLot.csproj" />
     <ProjectReference Include="..\ServiceProvider\ServiceProvider.csproj" />
     <ProjectReference Include="..\ServiceUser\ServiceUser.csproj" />

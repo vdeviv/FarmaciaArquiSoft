@@ -1,0 +1,45 @@
+﻿@page
+@model FarmaView.Pages.Client.CreateModel
+@{
+    ViewData["Title"] = "Nuevo Cliente";
+}
+
+<h2>Nuevo Cliente</h2>
+<hr />
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<form method="post" class="row g-3">
+    <div class="col-md-6">
+        <label asp-for="Input.first_name" class="form-label">Nombre</label>
+        <input asp-for="Input.first_name" class="form-control" required />
+        <span asp-validation-for="Input.first_name" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="Input.last_name" class="form-label">Apellido</label>
+        <input asp-for="Input.last_name" class="form-control" required />
+        <span asp-validation-for="Input.last_name" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="Input.nit" class="form-label">NIT</label>
+        <input asp-for="Input.nit" class="form-control" />
+        <span asp-validation-for="Input.nit" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="Input.email" class="form-label">Email</label>
+        <input asp-for="Input.email" class="form-control" />
+        <span asp-validation-for="Input.email" class="text-danger"></span>
+    </div>
+
+    <div class="col-12">
+        <button class="btn btn-primary" type="submit">Guardar</button>
+        <a asp-page="/Client/IndexClient" class="btn btn-secondary">Cancelar</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
