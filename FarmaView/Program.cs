@@ -15,7 +15,18 @@ using ServiceUser.Domain.Validators;
 using ServiceUser.Infraestructure.Persistence;
 using System.Globalization;
 using ClientEntity = ServiceClient.Domain.Client;
+
+// USINGS AÑADIDOS DE LA RAMA ReportesS
+using ServiceReports.Application;
+using ServiceReports.Infrastructure;
+using ServiceReports.Infrastructure.Repositories;
+using ServiceReports.Application.DTOs;
+using ServiceReports.Application.Interfaces;
+using ServiceReports.Application.Services;
+using ServiceReports.Infrastructure.Reports;
+
 using LotEntity = ServiceLot.Domain.Lot;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +35,7 @@ DatabaseConnection.Initialize(builder.Configuration);
 builder.Services.AddRazorPages()
                 .AddViewOptions(o =>
                 {
-                    // Desactivar validaci�n del lado del cliente (HTML5/jQuery)
+                    // Desactivar validación del lado del cliente (HTML5/jQuery)
                     o.HtmlHelperOptions.ClientValidationEnabled = false;
                 })
                 .AddMvcOptions(options =>
@@ -36,12 +47,18 @@ builder.Services.AddRazorPages()
 
 builder.Services.AddSingleton<IEncryptionService, EncryptionService>();
 
+// =========================================================================
+// REGISTROS DE SERVICIOS EXISTENTES (CLIENTES Y LOTES)
+// =========================================================================
 builder.Services.AddScoped<IRepository<ClientEntity>, ClientRepository>();
 builder.Services.AddScoped<IClientService, ClientService>();
 
 builder.Services.AddScoped<IRepository<LotEntity>, LotRepository>();
 builder.Services.AddScoped<LotService>();
 
+// =========================================================================
+// REGISTROS DE SERVICIOS DE USUARIO Y AUTENTICACIÓN (RAMA MAIN)
+// =========================================================================
 builder.Services.AddScoped<IRepository<User>, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IValidator<User>, UserValidator>();
@@ -63,11 +80,20 @@ builder.Services
                 {
                     options.LoginPath = "/Auth/Login";
                     options.AccessDeniedPath = "/Auth/Denied";
-                    options.SlidingExpiration = true; 
+                    options.SlidingExpiration = true;
                     options.ExpireTimeSpan = TimeSpan.FromHours(8);
                 });
 
 builder.Services.AddAuthorization();
+
+
+// =========================================================================
+// REGISTROS DE SERVICIOS DE REPORTES (RAMA ReportesS)
+// =========================================================================
+builder.Services.AddScoped<ReportRepository>();
+builder.Services.AddScoped<IClientFidelityReportBuilder, PdfClientFidelityReportBuilder>(); // Esta línea estaba causando conflicto
+builder.Services.AddScoped<IClientFidelityReportService, ClientFidelityReportService>();
+
 
 // =========================
 // (Opcional) OTROS SERVICIOS futuros
@@ -77,7 +103,7 @@ builder.Services.AddAuthorization();
 // builder.Services.AddScoped<ProviderService>();
 
 // =========================
-// Construcci�n de la app
+// ConstrucciÃ³n de la app
 // =========================
 var app = builder.Build();
 
