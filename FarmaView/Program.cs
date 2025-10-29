@@ -1,20 +1,37 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Options;
 using ServiceClient.Application;
 using ServiceClient.Infrastructure;
 using ServiceCommon.Application;
 using ServiceCommon.Domain.Ports;
 using ServiceCommon.Infrastructure.Data;
-using ServiceUser.Application.Services;
-using ServiceUser.Domain;
 using ServiceLot.Application;
 using ServiceLot.Infrastructure;
-using LotEntity = ServiceLot.Domain.Lot;
+using ServiceUser.Application.Services;
+using ServiceUser.Domain;
+using ServiceUser.Domain.Validators;
+using ServiceUser.Infraestructure.Persistence;
+using System.Globalization;
 using ClientEntity = ServiceClient.Domain.Client;
+using LotEntity = ServiceLot.Domain.Lot;
 
 var builder = WebApplication.CreateBuilder(args);
 
 DatabaseConnection.Initialize(builder.Configuration);
 
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages()
+                .AddViewOptions(o =>
+                {
+                    // Desactivar validación del lado del cliente (HTML5/jQuery)
+                    o.HtmlHelperOptions.ClientValidationEnabled = false;
+                })
+                .AddMvcOptions(options =>
+                {
+                    // Desactivar DataAnnotations: solo validaciones personalizadas
+                    options.ModelMetadataDetailsProviders.Clear();
+                    options.ModelValidatorProviders.Clear();
+                });
 
 builder.Services.AddSingleton<IEncryptionService, EncryptionService>();
 
@@ -23,6 +40,28 @@ builder.Services.AddScoped<IClientService, ClientService>();
 
 builder.Services.AddScoped<IRepository<LotEntity>, LotRepository>();
 builder.Services.AddScoped<LotService>();
+
+builder.Services.AddScoped<IRepository<User>, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IValidator<User>, UserValidator>();
+
+var supportedCultures = new[] { new CultureInfo("es-BO"), new CultureInfo("es") };
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture("es-BO");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+});
+
+builder.Services
+                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = "/Auth/Login";
+                    options.AccessDeniedPath = "/Auth/Denied";
+                });
+
+builder.Services.AddAuthorization();
 
 // =========================
 // (Opcional) OTROS SERVICIOS futuros
@@ -45,12 +84,17 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+var locOptions = app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>();
+app.UseRequestLocalization(locOptions.Value);
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapRazorPages();
+app.MapStaticAssets();
+app.MapRazorPages().WithStaticAssets();
 
 app.Run();

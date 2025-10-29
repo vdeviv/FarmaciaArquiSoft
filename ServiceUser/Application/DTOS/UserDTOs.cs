@@ -9,8 +9,8 @@ namespace ServiceUser.Application.DTOS
 {
     public record UserCreateDto(
         string FirstName,
-        string? SecondName,
-        string LastName,
+        string LastFirstName,
+        string LastSecondName,
         string Mail,
         int Phone,
         string Ci,
@@ -19,8 +19,8 @@ namespace ServiceUser.Application.DTOS
 
     public record UserUpdateDto(
         string? FirstName,
-        string? SecondName,
-        string? LastName,
+        string? LastFirstName,
+        string? LastSecondName,
         string? Mail,
         int? Phone,
         string? Ci,
@@ -32,8 +32,8 @@ namespace ServiceUser.Application.DTOS
     public record UserViewDto(
         int Id,
         string Username,
-        string FirstName,
-        string? SecondName,
+        string LastFirstName,
+        string? LastSecondName,
         string LastName,
         string? Mail,
         int Phone,
