@@ -1,0 +1,47 @@
+﻿@page
+@model Farmacia_Arqui_Soft.Pages.Auth.LoginModel
+@{
+    Layout = "_LayoutAuth";
+    ViewData["Title"] = "Iniciar Sesión";
+}
+
+<div class="login-container">
+    <div class="login-card shadow-lg border-0">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-success mt-3">Iniciar Sesión</h2>
+            <p class="text-muted">Accede al panel de gestión</p>
+        </div>
+
+        @if (TempData["Error"] is string e && !string.IsNullOrWhiteSpace(e))
+        {
+            <div class="alert alert-danger text-center">@e</div>
+        }
+
+        <form method="post" asp-page-handler="Password">
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            <div class="form-group mb-3 text-start">
+                <label asp-for="Input.Username" class="form-label fw-semibold">Usuario</label>
+                <input asp-for="Input.Username" class="form-control rounded-pill" placeholder="Ingrese su usuario" />
+                <span asp-validation-for="Input.Username" class="text-danger small"></span>
+            </div>
+
+            <div class="form-group mb-4 text-start">
+                <label asp-for="Input.Password" class="form-label fw-semibold">Contraseña</label>
+                <input asp-for="Input.Password" type="password" class="form-control rounded-pill" placeholder="Ingrese su contraseña" />
+                <span asp-validation-for="Input.Password" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 rounded-pill py-2 mb-3 fw-semibold">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar
+            </button>
+        </form>
+
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
