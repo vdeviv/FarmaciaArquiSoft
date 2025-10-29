@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using ServiceUser.Domain;
 using System.Security.Claims;
 
-namespace Farmacia_Arqui_Soft.Pages.Auth
+namespace FarmaView.Pages.Auth
 {
     [Authorize]
     public class ChangePasswordModel : PageModel

@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using static System.Net.Mime.MediaTypeNames;
 
 
-namespace Farmacia_Arqui_Soft.Pages.Users
+namespace FarmaView.Pages.Users
 {
     public class CreateModel : PageModel
     {
