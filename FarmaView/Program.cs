@@ -1,4 +1,4 @@
-using ServiceClient.Application;
+﻿using ServiceClient.Application;
 using ServiceClient.Infrastructure;
 using ServiceCommon.Application;
 using ServiceCommon.Domain.Ports;
@@ -9,6 +9,10 @@ using ServiceLot.Application;
 using ServiceLot.Infrastructure;
 using LotEntity = ServiceLot.Domain.Lot;
 using ClientEntity = ServiceClient.Domain.Client;
+using ServiceReports.Application;          
+using ServiceReports.Infrastructure;      
+using ServiceReports.Infrastructure.Repositories; 
+using ServiceReports.Application.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +28,9 @@ builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IRepository<LotEntity>, LotRepository>();
 builder.Services.AddScoped<LotService>();
 
+builder.Services.AddScoped<ReportRepository>();  // <- Usa tu capa infra para leer DB
+
+
 // =========================
 // (Opcional) OTROS SERVICIOS futuros
 // =========================
@@ -32,7 +39,7 @@ builder.Services.AddScoped<LotService>();
 // builder.Services.AddScoped<ProviderService>();
 
 // =========================
-// Construcci�n de la app
+// Construcción de la app
 // =========================
 var app = builder.Build();
 
