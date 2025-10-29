@@ -17,12 +17,16 @@ namespace ServiceUser.Domain
         #region Atributos
         public int id { get; set; }
         public string first_name { get; set; }
-        public string? second_name { get; set; }
-        public string last_name { get; set; }
+        public string last_first_name { get; set; }
+        public string last_second_name { get; set; }
         public string username { get; set; }
         public string password { get; set; }
+        public bool has_changed_password { get; set; } = false;   
+        public int password_version { get; set; } = 1;            
+        public DateTime? last_password_changed_at { get; set; }   
+
         public string mail { get; set; }
-        public int phone { get; set; }
+        public string phone { get; set; }
         public string ci { get; set; }
         public UserRole role { get; set; } = UserRole.Cajero;
         public DateTime created_at { get; set; } = DateTime.Now;
@@ -35,7 +39,7 @@ namespace ServiceUser.Domain
         #region Constructor
         public User() { }
 
-        public User(int id, string username, string password, string mail, int phone, string ci, UserRole role,
+        public User(int id, string username, string password, string mail, string phone, string ci, UserRole role,
                     bool is_deleted = false, int created_by = 0, int updated_by = 0,
                     DateTime? created_at = null, DateTime? updated_at = null)
         {

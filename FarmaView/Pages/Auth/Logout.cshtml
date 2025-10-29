@@ -1,0 +1,29 @@
+﻿@page
+@model Farmacia_Arqui_Soft.Pages.Auth.LogoutModel
+@{
+    Layout = "_LayoutAuth";
+    ViewData["Title"] = "Cerrar Sesión";
+}
+
+<div class="logout-container">
+    <div class="logout-card shadow-lg border-0 text-center">
+        <div class="mb-4">
+            <i class="bi bi-box-arrow-right text-danger display-3"></i>
+            <h3 class="fw-bold text-danger mt-3">¿Cerrar sesión?</h3>
+            <p class="text-muted">Confirma si deseas salir del sistema FarmaPlus.</p>
+        </div>
+
+        <form method="post">
+            <button type="submit" class="btn btn-danger w-100 rounded-pill py-2 fw-semibold">
+                <i class="bi bi-power me-2"></i>Salir
+            </button>
+            <a asp-page="/Index" class="btn btn-outline-secondary w-100 mt-3 rounded-pill fw-semibold">
+                <i class="bi bi-arrow-left-circle me-2"></i>Cancelar
+            </a>
+        </form>
+    </div>
+
+    <footer class="logout-footer text-center text-muted mt-4">
+        <small>&copy; 2025 - FarmaPlus | Diseñado con cariño en Cochabamba 💚</small>
+    </footer>
+</div>

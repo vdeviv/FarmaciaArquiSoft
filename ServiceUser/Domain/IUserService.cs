@@ -12,6 +12,7 @@ namespace ServiceUser.Domain
         Task<User> RegisterAsync(UserCreateDto dto, int actorId);
         Task<User?> GetByIdAsync(int id);
         Task<IEnumerable<User>> ListAsync();
+        Task ChangePasswordAsync(int userId, string currentPassword, string newPassword);
         Task UpdateAsync(int id, UserUpdateDto dto, int actorId);
         Task SoftDeleteAsync(int id, int actorId);
 

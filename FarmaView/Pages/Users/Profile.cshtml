@@ -1,0 +1,84 @@
+﻿@page
+@model Farmacia_Arqui_Soft.Pages.Users.ProfileModel
+@{
+    ViewData["Title"] = "Mi perfil";
+    Layout = "_Layout";
+}
+
+@if (Model.Current is null)
+{
+    <div class="alert alert-danger">No se pudo cargar tu perfil.</div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h4 class="card-title mb-3">Mi perfil</h4>
+            <p class="text-muted mb-4">ID: <strong>@Model.Current.id</strong></p>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="border rounded p-3">
+                        <div class="small text-muted">Usuario</div>
+                        <div class="fw-semibold">@Model.Current.username</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border rounded p-3">
+                        <div class="small text-muted">Nombre</div>
+                        <div class="fw-semibold">@Model.Current.first_name</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border rounded p-3">
+                        <div class="small text-muted">Apellidos</div>
+                        <div class="fw-semibold">@Model.Current.last_first_name @Model.Current.last_second_name</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border rounded p-3">
+                        <div class="small text-muted">Correo</div>
+                        <div class="fw-semibold">@Model.Current.mail</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border rounded p-3">
+                        <div class="small text-muted">Teléfono</div>
+                        <div class="fw-semibold">@Model.Current.phone</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border rounded p-3">
+                        <div class="small text-muted">Rol</div>
+                        <div class="fw-semibold">@Model.Current.role</div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-primary"
+                   asp-page="Edit" asp-route-id="@Model.Current.id">
+                    <i class="bi bi-pencil-square me-1"></i> Editar
+                </a>
+
+                <a class="btn btn-secondary"
+                   asp-page="/Users/Details">
+                    <i class="bi bi-eye me-1"></i> Detalles
+                </a>
+
+                <a class="btn btn-warning"
+                   asp-page="/Auth/ChangePassword">
+                    <i class="bi bi-shield-lock me-1"></i> Cambiar contraseña
+                </a>
+
+                <form method="post" asp-page-handler="Delete" onsubmit="return confirm('¿Seguro de desactivar tu cuenta?');">
+                    <button type="submit" class="btn btn-outline-danger">
+                        <i class="bi bi-trash me-1"></i> Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+}
