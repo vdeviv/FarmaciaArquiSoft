@@ -17,13 +17,13 @@ namespace ServiceUser.Application.Services
     {
         private readonly IRepository<User> _repo;
         private readonly IValidator<User> _validator;
-       // private readonly IEmailSender _email;
+       private readonly IEmailSender _email;
 
-        public UserService(IRepository<User> repo, IValidator<User> validator)
+        public UserService(IRepository<User> repo, IValidator<User> validator, IEmailSender email)
         {
             _repo = repo;
             _validator = validator;
-            
+            _email = email;
         }
 
 
@@ -70,13 +70,19 @@ namespace ServiceUser.Application.Services
 
             var created = await _repo.Create(user);
 
-           /* var subject = "Tu acceso al sistema de la farmacia";
-            var body = $"Hola {created.first_name},\n\n" +
-                       $"Se creó tu cuenta.\n" +
-                       $"Usuario: {created.username}\n" +
-                       $"Contraseña temporal: {plainPassword}\n\n" +
-                       $"Por favor cambia tu contraseña al ingresar.\n";
-            await _email.SendAsync(created.mail!, subject, body);*/
+            var subject = "Tu acceso al sistema de la farmacia";
+            var body =
+                            $@"Hola {created.first_name},
+
+                        Se creó tu cuenta.
+                        Usuario: {created.username}
+                        Contraseña temporal: {plainPassword}
+
+                        Por seguridad, cambia la contraseña al ingresar.";
+
+            
+            try { await _email.SendAsync(created.mail!, subject, body); }
+            catch { /* log y seguir; idealmente usar outbox en el futuro */ }
 
             return created;
         }

@@ -6,6 +6,7 @@ using ServiceClient.Infrastructure;
 using ServiceCommon.Application;
 using ServiceCommon.Domain.Ports;
 using ServiceCommon.Infrastructure.Data;
+using ServiceCommon.Infrastructure.Persistence;
 using ServiceLot.Application;
 using ServiceLot.Infrastructure;
 using ServiceUser.Application.Services;
@@ -52,6 +53,9 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.SupportedCultures = supportedCultures;
     options.SupportedUICultures = supportedCultures;
 });
+
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
+builder.Services.AddSingleton<IEmailSender, EmailSender>();
 
 builder.Services
                 .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
