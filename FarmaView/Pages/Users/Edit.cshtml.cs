@@ -94,8 +94,7 @@ namespace Farmacia_Arqui_Soft.Pages.Users
                     Input.Mail,
                     Input.Phone,
                     Input.Ci,
-                    Input.Role,
-                    Input.Password
+                    Input.Role
                 );
 
                 await _users.UpdateAsync(Input.Id, dto, ACTOR_ID);
@@ -142,7 +141,7 @@ namespace Farmacia_Arqui_Soft.Pages.Users
             [Required, EmailAddress, Display(Name = "Correo")] public string Mail { get; set; } = "";
 
             [Required, Range(100000, 9999999999), Display(Name = "Teléfono")]
-            public int Phone { get; set; }
+            public string Phone { get; set; }
 
             [Required, Display(Name = "CI")] public string Ci { get; set; } = "";
 

@@ -11,11 +11,7 @@ namespace Farmacia_Arqui_Soft.Pages.Auth
     public class LoginModel : PageModel
     {
         private readonly IUserService _users;
-
-        public LoginModel(IUserService users)
-        {
-            _users = users;
-        }
+        public LoginModel(IUserService users) => _users = users;
 
         [BindProperty] public LoginVm Input { get; set; } = new();
         [BindProperty] public string? ReturnUrl { get; set; }
@@ -40,7 +36,10 @@ namespace Farmacia_Arqui_Soft.Pages.Auth
                     new Claim(ClaimTypes.NameIdentifier, u.id.ToString()),
                     new Claim(ClaimTypes.Name, u.username),
                     new Claim(ClaimTypes.Email, u.mail ?? ""),
-                    new Claim(ClaimTypes.Role, u.role.ToString())
+                    new Claim(ClaimTypes.Role, u.role.ToString()),
+                    
+                    new Claim("HasChangedPassword", u.has_changed_password ? "true" : "false"),
+                    new Claim("PwdVer", u.password_version.ToString())
                 };
 
                 var id = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -48,6 +47,11 @@ namespace Farmacia_Arqui_Soft.Pages.Auth
                     CookieAuthenticationDefaults.AuthenticationScheme,
                     new ClaimsPrincipal(id));
 
+                
+                if (!u.has_changed_password)
+                    return LocalRedirect(Url.Content("~/Auth/ChangePassword"));
+
+                
                 return LocalRedirect(ReturnUrl!);
             }
             catch (Exception ex)
@@ -57,25 +61,23 @@ namespace Farmacia_Arqui_Soft.Pages.Auth
             }
         }
 
-        // Bot?n ?Entrar como Admin QA (fake)?
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> OnPostQuickAdminAsync()
         {
             ReturnUrl ??= Url.Content("~/");
-
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, "1"),
                 new Claim(ClaimTypes.Name, "admin.qa"),
                 new Claim(ClaimTypes.Email, "admin.qa@example.com"),
-                new Claim(ClaimTypes.Role, "Administrador")
+                new Claim(ClaimTypes.Role, "Administrador"),
+                new Claim("HasChangedPassword", "true"),
+                new Claim("PwdVer", "1")
             };
-
             var id = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(id));
-
             return LocalRedirect(ReturnUrl!);
         }
 
@@ -83,8 +85,7 @@ namespace Farmacia_Arqui_Soft.Pages.Auth
         {
             [Required, Display(Name = "Usuario")]
             public string Username { get; set; } = "";
-
-            [Required, Display(Name = "Contrase?a")]
+            [Required, Display(Name = "Contraseña")]
             public string Password { get; set; } = "";
         }
     }

@@ -12,21 +12,24 @@ namespace ServiceUser.Application.DTOS
         string LastFirstName,
         string LastSecondName,
         string Mail,
-        int Phone,
+        string Phone,
         string Ci,
         UserRole Role
     );
 
     public record UserUpdateDto(
-        string? FirstName,
-        string? LastFirstName,
-        string? LastSecondName,
-        string? Mail,
-        int? Phone,
-        string? Ci,
-        UserRole? Role,
-        string? Password
-    );
+     string? FirstName,
+     string? LastFirstName,
+     string? LastSecondName,
+     string? Mail,
+     string? Phone,  
+     string? Ci,
+     UserRole? Role
+ );
+    public record UserChangePasswordDto(
+    string CurrentPassword,
+    string NewPassword
+);
 
     // Opcional para respuestas limpias
     public record UserViewDto(
@@ -34,10 +37,24 @@ namespace ServiceUser.Application.DTOS
         string Username,
         string LastFirstName,
         string? LastSecondName,
-        string LastName,
         string? Mail,
-        int Phone,
+        string Phone,
         string Ci,
         UserRole Role
     );
+
+    public record UserCompleteViewDto(
+    int Id,
+    string Username,
+    string FirstName,
+    string LastFirstName,
+    string LastSecondName,
+    string? Mail,
+    string Phone,
+    string Ci,
+    UserRole Role,
+    bool HasChangedPassword,
+    int PasswordVersion,
+    DateTime? LastPasswordChangedAt
+);
 }

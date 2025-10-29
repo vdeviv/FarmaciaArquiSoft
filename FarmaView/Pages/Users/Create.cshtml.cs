@@ -86,7 +86,7 @@ namespace Farmacia_Arqui_Soft.Pages.Users
             public string Mail { get; set; } = "";
 
             [Required, Range(100000, 9999999999), Display(Name = "Teléfono")]
-            public int Phone { get; set; }
+            public string Phone { get; set; }
 
             [Required, Display(Name = "CI")]
             public string Ci { get; set; } = "";

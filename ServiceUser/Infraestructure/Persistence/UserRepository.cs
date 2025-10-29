@@ -4,10 +4,11 @@ using ServiceCommon.Infrastructure.Data;
 using ServiceUser.Domain;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Data;
+using System.Windows.Input;
 
 namespace ServiceUser.Infraestructure.Persistence
 {
@@ -22,12 +23,12 @@ namespace ServiceUser.Infraestructure.Persistence
 
         public async Task<User> Create(User entity)
         {
-            // + first_name, last_second_name, last_first_name
+
             string query = @"
 INSERT INTO users 
-(first_name, last_first_name, last_second_name,  username, password, mail, phone, ci, role, created_at, created_by, is_deleted) 
+(first_name, last_first_name, last_second_name,  username, password,has_changed_password,password_version, mail, phone, ci, role, created_at, created_by, is_deleted) 
 VALUES 
-(@first_name,@last_first_name, @last_second_name, @username,@password, @mail, @phone, @ci, @role, @created_at, @created_by, @is_deleted)";
+(@first_name,@last_first_name, @last_second_name, @username,@password,@has_changed_password,@password_version, @mail, @phone, @ci, @role, @created_at, @created_by, @is_deleted)";
 
             using var connection = _db.GetConnection();
             await connection.OpenAsync();
@@ -38,12 +39,14 @@ VALUES
             comand.Parameters.AddWithValue("@last_second_name", entity.last_second_name);
             comand.Parameters.AddWithValue("@username", entity.username);
             comand.Parameters.AddWithValue("@password", entity.password);
+            comand.Parameters.AddWithValue("@has_changed_password", entity.has_changed_password);
+            comand.Parameters.AddWithValue("@password_version", entity.password_version);
             comand.Parameters.AddWithValue("@mail", entity.mail);
             comand.Parameters.AddWithValue("@phone", entity.phone);
             comand.Parameters.AddWithValue("@ci", entity.ci);
             comand.Parameters.AddWithValue("@role", entity.role.ToString());
             comand.Parameters.AddWithValue("@created_at", entity.created_at);
-            comand.Parameters.AddWithValue("@created_by", entity.created_by);
+            comand.Parameters.AddWithValue("@created_by", (object?)entity.created_by ?? DBNull.Value);
             comand.Parameters.AddWithValue("@is_deleted", entity.is_deleted);
 
             await comand.ExecuteNonQueryAsync();
@@ -73,8 +76,11 @@ VALUES
 
                     username = reader.GetString("username"),
                     password = reader.GetString("password"),
+                    has_changed_password = reader.GetBoolean("has_changed_password"),
+                    password_version = reader.GetInt32("password_version"),
+                    last_password_changed_at = reader.IsDBNull(reader.GetOrdinal("last_password_changed_at")) ? null : reader.GetDateTime("last_password_changed_at"),
                     mail = reader.GetString("mail"),
-                    phone = reader.GetInt32("phone"),
+                    phone = reader.GetString("phone"),
                     ci = reader.GetString("ci"),
                     role = Enum.Parse<UserRole>(reader.GetString("role")),
 
@@ -114,8 +120,11 @@ VALUES
 
                     username = reader.GetString("username"),
                     password = reader.GetString("password"),
+                    has_changed_password = reader.GetBoolean("has_changed_password"),
+                    password_version = reader.GetInt32("password_version"),
+                    last_password_changed_at = reader.IsDBNull(reader.GetOrdinal("last_password_changed_at")) ? null : reader.GetDateTime("last_password_changed_at"),
                     mail = reader.GetString("mail"),
-                    phone = reader.GetInt32("phone"),
+                    phone = reader.GetString("phone"),
                     ci = reader.GetString("ci"),
                     role = Enum.Parse<UserRole>(reader.GetString("role")),
 
@@ -137,7 +146,10 @@ SET first_name=@first_name,
 last_first_name=@last_first_name,
     last_second_name=@last_second_name,  
     username=@username, 
-    password=@password, 
+    password=@password,
+has_changed_password=@has_changed_password,
+password_version=@password_version,
+last_password_changed_at=@last_password_changed_at,
     mail=@mail, 
     phone=@phone, 
     ci=@ci, 
@@ -157,6 +169,9 @@ WHERE id=@id";
 
             comand.Parameters.AddWithValue("@username", entity.username);
             comand.Parameters.AddWithValue("@password", entity.password);
+            comand.Parameters.AddWithValue("@has_changed_password", entity.has_changed_password);
+            comand.Parameters.AddWithValue("@password_version", entity.password_version);
+            comand.Parameters.AddWithValue("@last_password_changed_at",(object?)entity.last_password_changed_at ?? DBNull.Value);
             comand.Parameters.AddWithValue("@mail", (object?)entity.mail);
             comand.Parameters.AddWithValue("@phone", entity.phone);
             comand.Parameters.AddWithValue("@ci", entity.ci);
