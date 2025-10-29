@@ -82,19 +82,12 @@ namespace ServiceUser.Domain.Validators
 
             // TELÉFONO (int): obligatorio, positivo, 6–10 dígitos
             // *int* no guarda ceros a la izquierda, así que la longitud se evalúa sobre el valor entero.
-            if (user.phone <= 0)
-            {
-                result = result.WithFieldError("phone", "El teléfono debe ser un número positivo.");
-            }
-            else
-            {
-                // Máximo real para int: 2,147,483,647 (10 dígitos)
-                // Calculamos dígitos a partir del entero positivo
+            
                 var digits = user.phone.ToString(CultureInfo.InvariantCulture).Length;
 
                 if (digits < 6 || digits > 10)
                     result = result.WithFieldError("phone", "El teléfono debe tener entre 6 y 10 dígitos.");
-            }
+            
 
             return result;
         }

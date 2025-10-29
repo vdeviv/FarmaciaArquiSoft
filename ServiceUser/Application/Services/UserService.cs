@@ -37,13 +37,19 @@ namespace ServiceUser.Application.Services
                 first_name = dto.FirstName.Trim(),
                 last_first_name = dto.LastFirstName.Trim(),
                 last_second_name = dto.LastSecondName.Trim(),
-                
+
                 username = "",
                 password = "",
                 mail = dto.Mail.Trim(),
-                phone = dto.Phone,
+                phone = dto.Phone,              
                 ci = dto.Ci.Trim(),
                 role = dto.Role,
+
+                
+                has_changed_password = false,
+                password_version = 1,
+                last_password_changed_at = null,
+
                 created_by = actorId,
                 updated_by = actorId,
                 created_at = DateTime.Now,
@@ -82,7 +88,7 @@ namespace ServiceUser.Application.Services
 
             
             try { await _email.SendAsync(created.mail!, subject, body); }
-            catch { /* log y seguir; idealmente usar outbox en el futuro */ }
+            catch { /* log y seguir */ }
 
             return created;
         }
@@ -100,14 +106,10 @@ namespace ServiceUser.Application.Services
             if (dto.FirstName is not null) current.first_name = dto.FirstName.Trim();
             if (dto.LastFirstName is not null) current.last_first_name = dto.LastFirstName.Trim();
             if (dto.LastSecondName is not null) current.last_second_name = dto.LastSecondName.Trim();
-
             if (dto.Mail is not null) current.mail = dto.Mail.Trim();
-            if (dto.Phone is not null) current.phone = dto.Phone.Value;
+            if (dto.Phone is not null) current.phone = dto.Phone.Trim();
             if (dto.Ci is not null) current.ci = dto.Ci.Trim();
             if (dto.Role is not null) current.role = dto.Role.Value;
-
-            if (!string.IsNullOrWhiteSpace(dto.Password))
-                current.password = HashPassword(dto.Password!);
 
             current.updated_by = actorId;
             current.updated_at = DateTime.Now;
@@ -116,9 +118,32 @@ namespace ServiceUser.Application.Services
             if (!result.IsSuccess)
                 throw new ValidationException(result.Errors.ToDictionary());
 
-
             await _repo.Update(current);
         }
+
+        public async Task ChangePasswordAsync(int userId, string currentPassword, string newPassword)
+        {
+            var u = await GetByIdAsync(userId) ?? throw new NotFoundException("Usuario no encontrado.");
+
+            if (!VerifyPassword(currentPassword, u.password))
+                throw new DomainException("La contraseña actual no es correcta.");
+
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 8)
+                throw new DomainException("La nueva contraseña debe tener al menos 8 caracteres.");
+
+            if (VerifyPassword(newPassword, u.password))
+                throw new DomainException("La nueva contraseña no puede ser igual a la anterior.");
+
+            u.password = HashPassword(newPassword);
+            u.has_changed_password = true;
+            u.password_version += 1;
+            u.last_password_changed_at = DateTime.Now;
+            u.updated_at = DateTime.Now;
+
+            await _repo.Update(u);
+        }
+
+
 
         public async Task SoftDeleteAsync(int id, int actorId)
         {

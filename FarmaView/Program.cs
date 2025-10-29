@@ -63,6 +63,8 @@ builder.Services
                 {
                     options.LoginPath = "/Auth/Login";
                     options.AccessDeniedPath = "/Auth/Denied";
+                    options.SlidingExpiration = true; 
+                    options.ExpireTimeSpan = TimeSpan.FromHours(8);
                 });
 
 builder.Services.AddAuthorization();
@@ -96,6 +98,32 @@ app.UseStaticFiles();
 
 app.UseRouting();
 app.UseAuthentication();
+app.Use(async (ctx, next) =>
+{
+    var path = ctx.Request.Path.Value?.ToLowerInvariant() ?? "";
+
+    
+    bool allow =
+        path.StartsWith("/auth/login") ||
+        path.StartsWith("/auth/changepassword") ||
+        path.StartsWith("/auth/logout") ||
+        path.StartsWith("/css") || path.StartsWith("/js") ||
+        path.StartsWith("/lib") || path.StartsWith("/images");
+
+    var authed = ctx.User?.Identity?.IsAuthenticated == true;
+    if (authed)
+    {
+        var changed = ctx.User.FindFirst("HasChangedPassword")?.Value == "true";
+        if (!changed && !allow)
+        {
+            ctx.Response.Redirect("/Auth/ChangePassword");
+            return;
+        }
+    }
+
+    await next();
+});
+
 app.UseAuthorization();
 
 app.MapStaticAssets();
