@@ -9,10 +9,15 @@ using ServiceLot.Application;
 using ServiceLot.Infrastructure;
 using LotEntity = ServiceLot.Domain.Lot;
 using ClientEntity = ServiceClient.Domain.Client;
-using ServiceReports.Application;          
-using ServiceReports.Infrastructure;      
-using ServiceReports.Infrastructure.Repositories; 
+using ServiceReports.Application;
+using ServiceReports.Infrastructure;
+using ServiceReports.Infrastructure.Repositories;
 using ServiceReports.Application.DTOs;
+
+using ServiceReports.Application.Interfaces;
+using ServiceReports.Application.Services;
+// NECESITAS ESTE USING para la clase PdfClientFidelityReportBuilder
+using ServiceReports.Infrastructure.Reports;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +33,19 @@ builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IRepository<LotEntity>, LotRepository>();
 builder.Services.AddScoped<LotService>();
 
-builder.Services.AddScoped<ReportRepository>();  // <- Usa tu capa infra para leer DB
+builder.Services.AddScoped<ReportRepository>();
+
+// =========================================================
+// CORRECCIÓN 1: REGISTRO DEL CONSTRUCTOR DE REPORTES (BUILDER)
+// La interfaz que faltaba para resolver la dependencia anidada
+// =========================================================
+builder.Services.AddScoped<IClientFidelityReportBuilder, PdfClientFidelityReportBuilder>();
+
+// =========================================================
+// CORRECCIÓN 2: REGISTRO DEL SERVICIO DE REPORTE
+// El servicio que ya habías agregado, debe ir después del Builder
+// =========================================================
+builder.Services.AddScoped<IClientFidelityReportService, ClientFidelityReportService>();
 
 
 // =========================

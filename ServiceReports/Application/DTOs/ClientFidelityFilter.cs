@@ -11,5 +11,7 @@ namespace ServiceReports.Application.DTOs
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public decimal? MinTotal { get; set; } = 0;
+        public string SortBy { get; set; } = "FullName";
+        public string SortOrder { get; set; } = "ASC";
     }
 }

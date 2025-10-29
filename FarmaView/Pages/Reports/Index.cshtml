@@ -8,18 +8,18 @@
 
 <form method="post" class="mt-3">
     <div class="form-group">
-        <label for="StartDate">Fecha Inicio</label>
-        <input type="date" asp-for="StartDate" class="form-control" />
+        <label for="Filter_StartDate">Fecha Inicio</label>
+        <input type="date" asp-for="Filter.StartDate" class="form-control" />
     </div>
     <div class="form-group mt-2">
-        <label for="EndDate">Fecha Fin</label>
-        <input type="date" asp-for="EndDate" class="form-control" />
+        <label for="Filter_EndDate">Fecha Fin</label>
+        <input type="date" asp-for="Filter.EndDate" class="form-control" />
     </div>
 
     <button type="submit" asp-page-handler="Generate" class="btn btn-primary mt-3">
         Generar Reporte
     </button>
-    <button type="submit" formaction="/Reports/ExportPdf" class="btn btn-success mt-3">
+    <button type="submit" asp-page-handler="ExportPdf" class="btn btn-success mt-3">
         Exportar a PDF
     </button>
 </form>
@@ -44,7 +44,7 @@
                     <td>@c.SalesCount</td>
                     <td>@c.TotalSpent.ToString("C2")</td>
                     <td>@c.AvgTicket.ToString("C2")</td>
-                    <td>@c.LastSale?.ToString("dd/MM/yyyy")</td>
+                    <td>@c.LastSale?.ToString("yyyy-MM-dd")</td>
                 </tr>
             }
         </tbody>

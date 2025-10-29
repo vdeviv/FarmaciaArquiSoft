@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ServiceReports.Application.DTOs
 {
-    public class ClientFidelityDto // Este DTO es el que recibe los datos de Dapper
+    public class ClientFidelityDto
     {
         public int ClientId { get; set; }
         public string FullName { get; set; } // Coincide con el alias 'FullName' en SQL
