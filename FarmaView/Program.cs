@@ -33,20 +33,10 @@ builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IRepository<LotEntity>, LotRepository>();
 builder.Services.AddScoped<LotService>();
 
+
 builder.Services.AddScoped<ReportRepository>();
-
-// =========================================================
-// CORRECCIÓN 1: REGISTRO DEL CONSTRUCTOR DE REPORTES (BUILDER)
-// La interfaz que faltaba para resolver la dependencia anidada
-// =========================================================
-builder.Services.AddScoped<IClientFidelityReportBuilder, PdfClientFidelityReportBuilder>();
-
-// =========================================================
-// CORRECCIÓN 2: REGISTRO DEL SERVICIO DE REPORTE
-// El servicio que ya habías agregado, debe ir después del Builder
-// =========================================================
+builder.Services.AddScoped<IClientFidelityReportBuilder, PdfClientFidelityReportBuilder>(); // Asumiendo que esta es tu clase
 builder.Services.AddScoped<IClientFidelityReportService, ClientFidelityReportService>();
-
 
 // =========================
 // (Opcional) OTROS SERVICIOS futuros

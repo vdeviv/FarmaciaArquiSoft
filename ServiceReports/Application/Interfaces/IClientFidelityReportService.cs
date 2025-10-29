@@ -8,13 +8,7 @@ using ServiceReports.Application.DTOs;
 
 namespace ServiceReports.Application.Interfaces
 {
-    public interface IClientFidelityReportBuilder
-    {
-        IClientFidelityReportBuilder SetTitle(string title);
-        IClientFidelityReportBuilder SetLogoPath(string path);
-        IClientFidelityReportBuilder SetGeneratedBy(string user);
-        IClientFidelityReportBuilder SetFilters(ClientFidelityFilter filters);
-        IClientFidelityReportBuilder SetData(IEnumerable<ClientFidelityDto> data);
-        byte[] Build();
+    public interface IClientFidelityReportService
+    {        Task<byte[]> GeneratePdfReportAsync(ClientFidelityFilter filter, string generatedBy, string logoPath);
     }
 }

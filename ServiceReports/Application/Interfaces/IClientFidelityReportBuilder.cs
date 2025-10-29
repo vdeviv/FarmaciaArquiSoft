@@ -1,16 +1,18 @@
-﻿using ServiceReports.Application.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿using System.Collections.Generic;
 using ServiceReports.Application.DTOs;
 
 namespace ServiceReports.Application.Interfaces
 {
-    public interface IClientFidelityReportService
+    // Interfaz que define los pasos para construir el reporte PDF
+    public interface IClientFidelityReportBuilder
     {
-        Task<byte[]> GeneratePdfReportAsync(ClientFidelityFilter filter, string generatedBy, CancellationToken ct = default);
+        IClientFidelityReportBuilder SetTitle(string title);
+
+        IClientFidelityReportBuilder SetLogoPath(string path);
+
+        IClientFidelityReportBuilder SetGeneratedBy(string user);
+        IClientFidelityReportBuilder SetFilters(ClientFidelityFilter filters);
+        IClientFidelityReportBuilder SetData(IEnumerable<ClientFidelityDto> data);
+        byte[] Build();
     }
 }

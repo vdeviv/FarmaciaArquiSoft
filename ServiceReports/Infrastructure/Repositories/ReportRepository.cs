@@ -1,9 +1,12 @@
-﻿using ServiceReports.Application.DTOs;
+﻿// Ruta: ServiceReports.Infrastructure.Repositories/ReportRepository.cs
+
+using ServiceReports.Application.DTOs;
 using ServiceCommon;
 using Dapper;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ServiceCommon.Infrastructure.Data;
+using ServiceCommon.Infrastructure.Data; // Asumo esta ruta para DatabaseConnection
+using System.Threading;
 
 namespace ServiceReports.Infrastructure.Repositories
 {
@@ -13,6 +16,7 @@ namespace ServiceReports.Infrastructure.Repositories
 
         public ReportRepository()
         {
+            // Asumo que tu DatabaseConnection es un Singleton o es inyectada.
             _db = DatabaseConnection.Instance;
         }
 
@@ -46,14 +50,12 @@ namespace ServiceReports.Infrastructure.Repositories
             ";
 
             using var conn = DatabaseConnection.Instance.GetConnection();
-            await conn.OpenAsync(ct);
 
             var result = await conn.QueryAsync<ClientFidelityDto>(sql, new
             {
                 filter.StartDate,
                 filter.EndDate,
                 MinTotal = filter.MinTotal ?? 0,
-                // 🆕 CORRECCIÓN: Ahora que existen en el filtro DTO, se envían
                 SortBy = filter.SortBy ?? "FullName",
                 SortOrder = filter.SortOrder ?? "ASC"
             });
