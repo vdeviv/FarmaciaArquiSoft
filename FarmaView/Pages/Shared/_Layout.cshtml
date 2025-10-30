@@ -15,7 +15,7 @@
 </head>
 
 <body>
-    <!-- 🟢 Barra superior -->
+    
     <div class="top-contact text-white text-center py-1" style="background-color:#5E945A;">
         <div class="container d-flex justify-content-between align-items-center flex-wrap">
             <span><i class="bi bi-geo-alt-fill me-1"></i> Av. Aroma #123, Cochabamba, Bolivia</span>
@@ -24,7 +24,6 @@
         </div>
     </div>
 
-    <!-- 🟢 Navbar -->
     <header>
         <nav class="navbar navbar-expand-sm navbar-light shadow-sm sticky-top" style="background-color:#6DB076;">
             <div class="container">
@@ -117,14 +116,13 @@
         </nav>
     </header>
 
-    <!-- 🟢 Contenido principal -->
+ 
     <main class="main-content py-4">
         <div class="container">
             @RenderBody()
         </div>
     </main>
 
-    <!-- 🟢 Footer -->
     <footer class="footer text-center text-white mt-auto py-3" style="background-color:#5E945A;">
         <div class="container">
             <p class="mb-0">&copy; 2025 - FarmaPlus | Tu salud, nuestra prioridad</p>
@@ -132,7 +130,7 @@
         </div>
     </footer>
 
-    <!-- 🟢 Modal de alertas -->
+
     <div class="modal fade" id="globalModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content text-center p-4 rounded-4 shadow-lg border-0">
@@ -143,7 +141,7 @@
         </div>
     </div>
 
-    <!-- 🟢 Scripts -->
+
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
