@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using MySql.Data.MySqlClient;
+using ServiceClient.Application;             // IClientService + excepciones del servicio
+using ServiceClient.Application.DTOS;        // ClientUpdateDto
+using ServiceClient.Domain;                  // ClientEntity
+using ServiceCommon.Application;             // IEncryptionService
 using ServiceCommon.Domain.Ports;
 using System.Security.Cryptography;
-using ServiceClient.Infrastructure; // Necesario si ClientRepositoryFactory está aquí (revisar)
 
 using ClientEntity = ServiceClient.Domain.Client;
 
@@ -12,32 +15,21 @@ namespace FarmaView.Pages.Client
     [BindProperties]
     public class EditModel : PageModel
     {
-        // El repositorio ahora se inyecta por el constructor (mejor práctica)
-        // PERO para mantener la lógica original de usar la Factory:
-        private readonly IRepository<ClientEntity> _ClientRepository;
+        private readonly IClientService _clients;
         private readonly IEncryptionService _encryptionService;
-
-        // Se elimina la dependencia del IValidator<ClientEntity>
-        // private readonly IValidator<ClientEntity> _validator; 
 
         [BindProperty]
         public ClientEntity Input { get; set; } = new ClientEntity();
 
-        // Se inyecta IEncryptionService, pero se mantiene la Factory en el constructor 
-        // para el repositorio, siguiendo tu lógica anterior.
-        public EditModel(IEncryptionService encryptionService)
+        public EditModel(IClientService clients, IEncryptionService encryptionService)
         {
-            // Se elimina la asignación de _validator
-
-            var factory = new ClientRepositoryFactory();
-            _ClientRepository = factory.CreateRepository<ClientEntity>();
-
+            _clients = clients;
             _encryptionService = encryptionService;
         }
 
         public async Task<IActionResult> OnGetAsync(string id)
         {
-            if (string.IsNullOrEmpty(id))
+            if (string.IsNullOrWhiteSpace(id))
             {
                 TempData["Error"] = "ID de cliente no proporcionado.";
                 return RedirectToPage("/Client/IndexClient");
@@ -59,12 +51,10 @@ namespace FarmaView.Pages.Client
                 return RedirectToPage("/Client/IndexClient");
             }
 
-            var tempClient = new ClientEntity { id = decryptedId };
-            var found = await _ClientRepository.GetById(tempClient);
-
+            var found = await _clients.GetByIdAsync(decryptedId);
             if (found is null)
             {
-                TempData["Error"] = $"Cliente no encontrado o eliminado.";
+                TempData["Error"] = "Cliente no encontrado o eliminado.";
                 return RedirectToPage("/Client/IndexClient");
             }
 
@@ -72,26 +62,45 @@ namespace FarmaView.Pages.Client
             return Page();
         }
 
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> OnPostAsync()
         {
-            // Únicamente validamos el modelo usando Data Annotations (ModelState.IsValid)
             if (!ModelState.IsValid) return Page();
 
-            // ❌ Eliminado: Se quitó toda la lógica de validación con _validator.Validate(Input)
+            // Construimos el DTO igual que en Users (Create/Update)
+            var dto = new ClientUpdateDto(
+                FirstName: Input.first_name,
+                LastName: Input.last_name,
+                email: Input.email,
+                nit: Input.nit
+            );
+
+            var actorId = int.TryParse(User.FindFirst("UserId")?.Value, out var uid) ? uid : 1;
 
             try
             {
-                // El campo Input.id (oculto en la vista Edit.cshtml) ya contiene el ID desencriptado.
-                await _ClientRepository.Update(Input);
+                await _clients.UpdateAsync(Input.id, dto, actorId);
+                TempData["Success"] = "Cliente actualizado correctamente.";
+                return RedirectToPage("/Client/IndexClient");
             }
-            catch (MySqlException ex) when (ex.Number == 1062) // Duplicate entry
+            catch (ServiceClient.Application.ValidationException vex)
             {
-                ModelState.AddModelError("Input.email", "Ese email ya está vinculado a otro cliente. Por favor, usa uno distinto.");
+                // Mismo patrón que Users: errores al resumen de arriba
+                foreach (var kv in vex.Errors)
+                    ModelState.AddModelError(kv.Key ?? string.Empty, kv.Value);
                 return Page();
             }
-
-            TempData["Success"] = "Cliente actualizado correctamente.";
-            return RedirectToPage("/Client/IndexClient");
+            catch (ServiceClient.Application.DomainException ex)
+            {
+                // Reglas de negocio (únicos: email/nit) → también arriba
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"Ocurrió un error al actualizar: {ex.Message}");
+                return Page();
+            }
         }
     }
 }
