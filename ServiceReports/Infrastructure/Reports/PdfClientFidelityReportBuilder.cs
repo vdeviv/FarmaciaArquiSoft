@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Ruta: ServiceReports.Infrastructure.Reports/PdfClientFidelityReportBuilder.cs
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -325,7 +327,22 @@ namespace ServiceReports.Infrastructure.Reports
             gfx.DrawString($"Fecha de generación: {DateTime.Now:dd/MM/yyyy HH:mm:ss}",
                 fontSmall, XBrushes.Gray,
                 new XRect(textX, y, textWidth, 15), XStringFormats.TopLeft);
-            y += 20;
+            y += 15;
+
+            // 🏆 Indicador de Top N (si aplica)
+            if (_filters != null && _filters.IsTopNFilter)
+            {
+                // Fondo amarillo para destacar
+                gfx.DrawRectangle(new XSolidBrush(XColor.FromArgb(255, 243, 205)),
+                    textX - 5, y - 2, textWidth + 5, 18);
+
+                gfx.DrawString($"🏆 Mostrando Top {_filters.TopN} clientes con mayor gasto",
+                    new XFont("Arial", 9, XFontStyle.Bold), XBrushes.DarkOrange,
+                    new XRect(textX, y, textWidth, 15), XStringFormats.TopLeft);
+                y += 18;
+            }
+
+            y += 5;
 
             return y;
         }

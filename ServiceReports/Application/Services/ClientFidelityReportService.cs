@@ -1,4 +1,6 @@
-﻿using ServiceReports.Application.DTOs;
+﻿// Ruta: ServiceReports.Application.Services/ClientFidelityReportService.cs
+
+using ServiceReports.Application.DTOs;
 using ServiceReports.Application.Interfaces;
 using ServiceReports.Infrastructure.Repositories;
 using ServiceReports.Infrastructure.Reports;
@@ -31,12 +33,17 @@ namespace ServiceReports.Application.Services
             // Obtener datos del repositorio
             IEnumerable<ClientFidelityDto> data = await _reportRepository.GetClientFidelityAsync(filter);
 
+            // 🚀 Determinar el título según si es Top N o no
+            string title = filter.IsTopNFilter
+                ? $"Top {filter.TopN} Clientes - Reporte de Fidelidad"
+                : "Reporte de Fidelidad de Clientes";
+
             // Construir PDF con TODOS los datos necesarios
             byte[] pdfBytes = _pdfReportBuilder
-                .SetTitle("Reporte de Fidelidad de Clientes")
+                .SetTitle(title)
                 .SetLogoPath(logoPath)
-                .SetGeneratedBy(generatedBy) // 🚀 IMPORTANTE: Pasar el usuario
-                .SetFilters(filter)           // 🚀 IMPORTANTE: Pasar los filtros
+                .SetGeneratedBy(generatedBy)
+                .SetFilters(filter)
                 .SetData(data)
                 .Build();
 
@@ -48,9 +55,14 @@ namespace ServiceReports.Application.Services
             // Obtener datos del repositorio
             IEnumerable<ClientFidelityDto> data = await _reportRepository.GetClientFidelityAsync(filter);
 
+            // 🚀 Determinar el título según si es Top N o no
+            string title = filter.IsTopNFilter
+                ? $"Top {filter.TopN} Clientes - Reporte de Fidelidad"
+                : "Reporte de Fidelidad de Clientes";
+
             // Construir Excel
             byte[] excelBytes = _excelReportBuilder
-                .SetTitle("Reporte de Fidelidad de Clientes")
+                .SetTitle(title)
                 .SetFilters(filter)
                 .SetData(data)
                 .Build();
