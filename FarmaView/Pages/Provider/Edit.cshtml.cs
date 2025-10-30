@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using MySql.Data.MySqlClient;
 using ServiceCommon.Domain.Ports;
-using ServiceProvider.Infraestructure;
+using ServiceProvider.Application;
+using ServiceProvider.Application.DTOS;
 using System.Security.Cryptography;
-
 using ProviderEntity = ServiceProvider.Domain.Provider;
 
 namespace FarmaView.Pages.Provider
@@ -12,18 +12,17 @@ namespace FarmaView.Pages.Provider
     [BindProperties]
     public class EditModel : PageModel
     {
-        private readonly IRepository<ProviderEntity> _providerRepository;
+        private readonly IProviderService _providerService;
         private readonly IEncryptionService _encryptionService;
+
+        public EditModel(IProviderService providerService, IEncryptionService encryptionService)
+        {
+            _providerService = providerService;
+            _encryptionService = encryptionService;
+        }
 
         [BindProperty]
         public ProviderEntity Input { get; set; } = new();
-
-        public EditModel(IEncryptionService encryptionService)
-        {
-            var factory = new ProviderRepositoryFactory();
-            _providerRepository = factory.CreateRepository<ProviderEntity>();
-            _encryptionService = encryptionService;
-        }
 
         public async Task<IActionResult> OnGetAsync(string id)
         {
@@ -33,10 +32,10 @@ namespace FarmaView.Pages.Provider
                 return RedirectToPage("/Provider/IndexProvider");
             }
 
-            int decryptedId;
+            int providerId;
             try
             {
-                decryptedId = _encryptionService.DecryptId(id);
+                providerId = _encryptionService.DecryptId(id);
             }
             catch (FormatException)
             {
@@ -49,9 +48,7 @@ namespace FarmaView.Pages.Provider
                 return RedirectToPage("/Provider/IndexProvider");
             }
 
-            var temp = new ProviderEntity { id = decryptedId };
-            var found = await _providerRepository.GetById(temp);
-
+            var found = await _providerService.GetByIdAsync(providerId);
             if (found is null)
             {
                 TempData["ErrorMessage"] = "Proveedor no encontrado o eliminado.";
@@ -64,19 +61,53 @@ namespace FarmaView.Pages.Provider
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (!ModelState.IsValid) return Page();
+            if (!ModelState.IsValid)
+                return Page();
 
             try
             {
-              
-                Input.updated_by = 1;
-                await _providerRepository.Update(Input);
+                var dto = new ProviderUpdateDto(
+                    Input.first_name,
+                    Input.second_name,
+                    Input.last_first_name,
+                    Input.last_second_name,
+                    Input.nit,
+                    Input.address,
+                    Input.email,
+                    Input.phone,
+                    Input.status
+                );
+
+                await _providerService.UpdateAsync(Input.id, dto, 1); // actorId temporal
                 TempData["SuccessMessage"] = "Proveedor actualizado correctamente.";
                 return RedirectToPage("/Provider/IndexProvider");
             }
+            catch (ValidationException vex)
+            {
+                // Mostrar solo debajo de cada campo
+                foreach (var error in vex.Errors)
+                {
+                    var hasField = error.Metadata != null &&
+                                   error.Metadata.TryGetValue("field", out var f) &&
+                                   f is string s && !string.IsNullOrWhiteSpace(s);
+
+                    if (hasField)
+                        ModelState.AddModelError($"Input.{(string)error.Metadata["field"]}", error.Message);
+                    else
+                        ModelState.AddModelError(string.Empty, error.Message);
+                }
+                return Page();
+            }
             catch (MySqlException ex) when (ex.Number == 1062)
             {
-                ModelState.AddModelError(string.Empty, "NIT o Email ya están registrados para otro proveedor.");
+                // Duplicado: NIT o Email
+                // Si quieres, puedes mapearlo a un campo específico, por simplicidad lo dejamos general
+                ModelState.AddModelError("Input.nit", "NIT o Email ya están registrados para otro proveedor.");
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"Error inesperado: {ex.Message}");
                 return Page();
             }
         }

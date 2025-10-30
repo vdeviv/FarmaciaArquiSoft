@@ -6,7 +6,7 @@
 
 <h2>Editar proveedor</h2>
 
-<form method="post">
+<form method="post" novalidate>
     <input type="hidden" asp-for="Input.id" />
 
     <div class="row g-3">
@@ -15,16 +15,19 @@
             <input asp-for="Input.first_name" class="form-control" />
             <span asp-validation-for="Input.first_name" class="text-danger"></span>
         </div>
+
         <div class="col-md-6">
             <label class="form-label">Segundo nombre</label>
             <input asp-for="Input.second_name" class="form-control" />
             <span asp-validation-for="Input.second_name" class="text-danger"></span>
         </div>
+
         <div class="col-md-6">
             <label class="form-label">Apellido paterno</label>
             <input asp-for="Input.last_first_name" class="form-control" />
             <span asp-validation-for="Input.last_first_name" class="text-danger"></span>
         </div>
+
         <div class="col-md-6">
             <label class="form-label">Apellido materno</label>
             <input asp-for="Input.last_second_name" class="form-control" />
@@ -36,6 +39,7 @@
             <input asp-for="Input.nit" class="form-control" />
             <span asp-validation-for="Input.nit" class="text-danger"></span>
         </div>
+
         <div class="col-md-8">
             <label class="form-label">Dirección</label>
             <input asp-for="Input.address" class="form-control" />
@@ -47,6 +51,7 @@
             <input asp-for="Input.email" class="form-control" />
             <span asp-validation-for="Input.email" class="text-danger"></span>
         </div>
+
         <div class="col-md-6">
             <label class="form-label">Teléfono</label>
             <input asp-for="Input.phone" class="form-control" />
@@ -61,8 +66,12 @@
         </div>
     </div>
 
-    <div class="mt-3">
-        <button type="submit" class="btn btn-primary">Guardar</button>
+    <div class="mt-4">
+        <button type="submit" class="btn btn-primary me-2">Guardar</button>
         <a asp-page="/Provider/IndexProvider" class="btn btn-secondary">Cancelar</a>
     </div>
 </form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

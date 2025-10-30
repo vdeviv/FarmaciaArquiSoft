@@ -10,6 +10,8 @@ using ServiceCommon.Infrastructure.Persistence;
 using ServiceLot.Application;
 using ServiceLot.Domain.Validators;           // ✅ para LotValidator
 using ServiceLot.Infrastructure;
+using ServiceProvider.Domain.Validators;
+using ServiceProvider.Domain;
 using ServiceReports.Application;
 using ServiceReports.Application.DTOs;
 using ServiceReports.Application.Interfaces;
@@ -72,6 +74,8 @@ builder.Services.AddScoped<LotService>();
 
 // >>> NUEVO: Provider
 builder.Services.AddScoped<IRepository<ProviderEntity>, ProviderRepository>();
+builder.Services.AddScoped<IProviderService, ProviderService>();
+builder.Services.AddScoped<IValidator<Provider>, ProviderValidator>();
 builder.Services.AddScoped<IProviderService, ProviderService>();
 
 // =========================================================================
