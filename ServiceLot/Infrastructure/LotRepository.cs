@@ -5,9 +5,6 @@ using ServiceCommon.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ServiceLot.Infrastructure
@@ -31,7 +28,13 @@ namespace ServiceLot.Infrastructure
             await connection.OpenAsync();
 
             using var cmd = new MySqlCommand(query, connection);
-            cmd.Parameters.AddWithValue("@medicine_id", entity.MedicineId);
+
+            // ? convertir a DBNull si no hay medicine_id
+            if (entity.MedicineId <= 0)
+                cmd.Parameters.AddWithValue("@medicine_id", DBNull.Value);
+            else
+                cmd.Parameters.AddWithValue("@medicine_id", entity.MedicineId);
+
             cmd.Parameters.AddWithValue("@batch_number", entity.BatchNumber);
             cmd.Parameters.AddWithValue("@expiration_date", entity.ExpirationDate);
             cmd.Parameters.AddWithValue("@quantity", entity.Quantity);
@@ -56,9 +59,12 @@ namespace ServiceLot.Infrastructure
             using var reader = await cmd.ExecuteReaderAsync();
             if (await reader.ReadAsync())
             {
+                // ? manejar nulos en medicine_id
+                int? medId = reader["medicine_id"] == DBNull.Value ? (int?)null : reader.GetInt32("medicine_id");
+
                 return new Lot(
                     reader.GetInt32("id"),
-                    reader.GetInt32("medicine_id"),
+                    medId,
                     reader.GetString("batch_number"),
                     reader.GetDateTime("expiration_date"),
                     reader.GetInt32("quantity"),
@@ -88,9 +94,11 @@ namespace ServiceLot.Infrastructure
 
             while (await reader.ReadAsync())
             {
+                int? medId = reader["medicine_id"] == DBNull.Value ? (int?)null : reader.GetInt32("medicine_id");
+
                 list.Add(new Lot(
                     reader.GetInt32("id"),
-                    reader.GetInt32("medicine_id"),
+                    medId,
                     reader.GetString("batch_number"),
                     reader.GetDateTime("expiration_date"),
                     reader.GetInt32("quantity"),
@@ -122,7 +130,12 @@ namespace ServiceLot.Infrastructure
             await connection.OpenAsync();
 
             using var cmd = new MySqlCommand(query, connection);
-            cmd.Parameters.AddWithValue("@medicine_id", entity.MedicineId);
+
+            if (entity.MedicineId <= 0)
+                cmd.Parameters.AddWithValue("@medicine_id", DBNull.Value);
+            else
+                cmd.Parameters.AddWithValue("@medicine_id", entity.MedicineId);
+
             cmd.Parameters.AddWithValue("@batch_number", entity.BatchNumber);
             cmd.Parameters.AddWithValue("@expiration_date", entity.ExpirationDate);
             cmd.Parameters.AddWithValue("@quantity", entity.Quantity);
