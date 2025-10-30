@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using ServiceLot.Infrastructure;
-using ServiceCommon.Domain.Ports;
 using ServiceLot.Application;
 using ServiceLot.Domain;
+
 using LotEntity = ServiceLot.Domain.Lot;
 
 namespace FarmaView.Pages.Lots
@@ -15,30 +14,47 @@ namespace FarmaView.Pages.Lots
         [BindProperty]
         public LotEntity Lot { get; set; } = new LotEntity();
 
-        public CreateModel()
+        public CreateModel(LotService service)
         {
-            _service = new LotService();
+            _service = service;
         }
 
-        public void OnGet()
+        public void OnGet(int? medicineId)
         {
-            // Página de creación sin lógica adicional
+            if (medicineId.HasValue && medicineId.Value > 0)
+                Lot.MedicineId = medicineId.Value;
         }
 
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> OnPostAsync()
         {
-            if (!ModelState.IsValid)
-                return Page();
 
-            var (success, _) = await _service.CreateAsync(Lot);
-            if (!success)
+            if (!ModelState.IsValid) return Page();
+
+            try
             {
-                ModelState.AddModelError(string.Empty, "Error al crear el lote.");
+                var actorId = int.TryParse(User.FindFirst("UserId")?.Value, out var uid) ? uid : 1;
+                await _service.CreateAsync(Lot, actorId);
+
+                TempData["SuccessMessage"] = "Lote creado exitosamente.";
+                return RedirectToPage("Index");
+            }
+            catch (ServiceLot.Application.ValidationException vex)
+            {
+                foreach (var kv in vex.Errors)
+                    ModelState.AddModelError(kv.Key ?? string.Empty, kv.Value);
                 return Page();
             }
-
-            TempData["SuccessMessage"] = "Lote creado exitosamente.";
-            return RedirectToPage("Index");
+            catch (ServiceLot.Application.DomainException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"Ocurrió un error al crear el lote: {ex.Message}");
+                return Page();
+            }
         }
     }
 }

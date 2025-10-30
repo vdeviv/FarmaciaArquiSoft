@@ -1,61 +1,54 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using MySql.Data.MySqlClient;
+using ServiceCommon.Application;
 using ServiceCommon.Domain.Ports;
-using System.Security.Cryptography;
-using ServiceLot.Infrastructure; 
 using ServiceLot.Application;
+using ServiceLot.Domain;
+using System.Security.Cryptography;
 using LotEntity = ServiceLot.Domain.Lot;
 
 namespace FarmaView.Pages.Lots
 {
     [BindProperties]
-    [Route("Lots/Edit/{encryptedId?}")]
     public class EditModel : PageModel
     {
-        private readonly IRepository<LotEntity> _lotRepository;
-        private readonly IEncryptionService _encryptionService;
+        private readonly LotService _service;
+        private readonly IEncryptionService _encryption;
 
         [BindProperty]
         public LotEntity Input { get; set; } = new LotEntity();
 
-        public EditModel(IEncryptionService encryptionService)
+        public EditModel(LotService service, IEncryptionService encryption)
         {
-            var factory = new LotRepositoryFactory();
-            _lotRepository = factory.CreateRepository<LotEntity>();
-            _encryptionService = encryptionService;
+            _service = service;
+            _encryption = encryption;
         }
 
         public async Task<IActionResult> OnGetAsync(string encryptedId)
         {
-            if (string.IsNullOrEmpty(encryptedId))
+            if (string.IsNullOrWhiteSpace(encryptedId))
             {
                 TempData["ErrorMessage"] = "ID de lote no proporcionado.";
                 return RedirectToPage("/Lots/Index");
             }
 
             int id;
-            try
-            {
-                id = _encryptionService.DecryptId(encryptedId);
-            }
+            try { id = _encryption.DecryptId(encryptedId); }
             catch (FormatException)
             {
-                TempData["ErrorMessage"] = "ID de lote inválido o corrupto.";
+                TempData["ErrorMessage"] = "ID inválido.";
                 return RedirectToPage("/Lots/Index");
             }
             catch (CryptographicException)
             {
-                TempData["ErrorMessage"] = "Error de seguridad al desencriptar el ID.";
+                TempData["ErrorMessage"] = "Error de seguridad con el ID.";
                 return RedirectToPage("/Lots/Index");
             }
 
-            var tempLot = new LotEntity { Id = id };
-            var found = await _lotRepository.GetById(tempLot);
-
+            var found = await _service.GetByIdAsync(id);
             if (found is null)
             {
-                TempData["ErrorMessage"] = "Lote no encontrado o eliminado.";
+                TempData["ErrorMessage"] = "Lote no encontrado.";
                 return RedirectToPage("/Lots/Index");
             }
 
@@ -63,23 +56,30 @@ namespace FarmaView.Pages.Lots
             return Page();
         }
 
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> OnPostAsync()
         {
-            if (!ModelState.IsValid)
-                return Page();
+            if (!ModelState.IsValid) return Page();
 
             try
             {
-                await _lotRepository.Update(Input);
+                var actorId = int.TryParse(User.FindFirst("UserId")?.Value, out var uid) ? uid : 1;
+                await _service.UpdateAsync(Input, actorId);
+
+                TempData["SuccessMessage"] = "Lote actualizado correctamente.";
+                return RedirectToPage("/Lots/Index");
             }
-            catch (MySqlException ex) when (ex.Number == 1062) 
+            catch (ServiceLot.Application.ValidationException vex)
             {
-                ModelState.AddModelError("Input.Name", "Ya existe un lote con este nombre o código.");
+                foreach (var kv in vex.Errors)
+                    ModelState.AddModelError(kv.Key ?? string.Empty, kv.Value);
                 return Page();
             }
-
-            TempData["SuccessMessage"] = "Lote actualizado correctamente.";
-            return RedirectToPage("/Lots/Index");
+            catch (ServiceLot.Application.DomainException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return Page();
+            }
         }
     }
 }

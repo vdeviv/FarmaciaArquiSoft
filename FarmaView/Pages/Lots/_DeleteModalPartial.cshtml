@@ -9,8 +9,9 @@
                 ¿Estás seguro de eliminar este lote?
             </p>
 
+            <!-- Importante: handler y nombre del campo -->
             <form method="post" asp-page-handler="Delete">
-                <input type="hidden" name="id" id="deleteId" />
+                <input type="hidden" id="deleteId" name="encryptedId" />
                 <div class="d-flex justify-content-center gap-3">
                     <button type="submit" class="btn btn-danger rounded-pill px-4">
                         <i class="bi bi-trash"></i> Eliminar
