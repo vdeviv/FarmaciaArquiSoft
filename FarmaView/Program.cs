@@ -10,6 +10,8 @@ using ServiceCommon.Infrastructure.Persistence;
 using ServiceLot.Application;
 using ServiceLot.Domain.Validators;           // ✅ para LotValidator
 using ServiceLot.Infrastructure;
+using ServiceProvider.Domain.Validators;
+using ServiceProvider.Domain;
 using ServiceReports.Application;
 using ServiceReports.Application.DTOs;
 using ServiceReports.Application.Interfaces;
@@ -26,6 +28,11 @@ using ServiceClient.Domain.Validators;         // para ClientValidator
 using System.Globalization;
 
 using ClientEntity = ServiceClient.Domain.Client;
+using ServiceProvider.Application;
+using ServiceProvider.Infraestructure;
+using ProviderEntity = ServiceProvider.Domain.Provider;
+
+
 using LotEntity = ServiceLot.Domain.Lot;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -52,9 +59,7 @@ builder.Services
 // =========================================================
 builder.Services.AddSingleton<IEncryptionService, EncryptionService>();
 
-// =========================================================
-// 🧍 Clientes
-// =========================================================
+
 builder.Services.AddScoped<IRepository<ClientEntity>, ClientRepository>();
 builder.Services.AddScoped<IValidator<ClientEntity>, ClientValidator>();
 builder.Services.AddScoped<IClientService, ClientService>();
@@ -66,9 +71,17 @@ builder.Services.AddScoped<IRepository<LotEntity>, LotRepository>();
 builder.Services.AddScoped<IValidator<LotEntity>, LotValidator>();  // ✅ nuevo validador
 builder.Services.AddScoped<LotService>();
 
-// =========================================================
-// 👤 Usuarios
-// =========================================================
+
+// >>> NUEVO: Provider
+builder.Services.AddScoped<IRepository<ProviderEntity>, ProviderRepository>();
+builder.Services.AddScoped<IProviderService, ProviderService>();
+builder.Services.AddScoped<IValidator<Provider>, ProviderValidator>();
+builder.Services.AddScoped<IProviderService, ProviderService>();
+
+// =========================================================================
+// REGISTROS DE SERVICIOS DE USUARIO Y AUTENTICACIÓN (RAMA MAIN)
+// =========================================================================
+
 builder.Services.AddScoped<IRepository<User>, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IValidator<User>, UserValidator>();
