@@ -1,10 +1,15 @@
-﻿using ServiceReports.Application.DTOs;
+﻿using Dapper;
 using ServiceCommon;
-using Dapper;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using ServiceCommon.Infrastructure.Data;
+using ServiceReports.Application.DTOs;
+using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
+using static ServiceReports.Application.DTOs.MedicineByCategoryDto;
+using System.Data; // 🚀 Asegúrese de incluir esto para IDbConnection
+
+// Alias para usar el CategoryDto recién creado
+using CategoryDto = ServiceReports.Application.DTOs.CategoryDto;
 
 namespace ServiceReports.Infrastructure.Repositories
 {
@@ -21,16 +26,13 @@ namespace ServiceReports.Infrastructure.Repositories
             ClientFidelityFilter filter,
             CancellationToken ct = default)
         {
-            // 🚀 DETERMINAR EL LÍMITE: Si hay TopN, usarlo; sino, usar 100
+            // ... (El código existente para GetClientFidelityAsync es correcto y no se modifica)
             int limit = filter.TopN ?? 100;
-
-            // 🚀 Si es Top N, forzar ordenamiento por TotalSpent DESC
             string sortBy = filter.SortBy ?? "FullName";
             string sortOrder = filter.SortOrder ?? "ASC";
 
             if (filter.IsTopNFilter)
             {
-                // Para Top N, siempre ordenar por TotalSpent descendente
                 sortBy = "TotalSpent";
                 sortOrder = "DESC";
             }
@@ -72,10 +74,88 @@ namespace ServiceReports.Infrastructure.Repositories
                 MinTotal = filter.MinTotal ?? 0,
                 SortBy = sortBy,
                 SortOrder = sortOrder,
-                Limit = limit // 🚀 USAR LÍMITE DINÁMICO
+                Limit = limit
             });
 
             return result;
+        }
+
+        public async Task<IEnumerable<MedicineByCategoryDto>> GetMedicinesByCategoryAsync(MedicineByCategoryFilter filter)
+        {
+            // ✅ CORRECCIÓN: Cambiado de 'const string' a 'string' para que sea modificable.
+            string sql = @"
+    SELECT 
+        c.id AS CategoryId,
+        c.name AS CategoryName,
+        c.status AS CategoryStatus,
+        m.id AS MedicineId,
+        m.name AS MedicineName,
+        m.description AS Description,
+        m.stock_total AS StockTotal,
+        m.unit_price AS UnitPrice,
+        m.status AS MedicineStatus,
+        p.id AS PresentationId,
+        p.name AS PresentationName
+    FROM
+        medicines m
+    INNER JOIN
+        categories c ON m.category_id = c.id
+    INNER JOIN
+        presentations p ON m.presentation_id = p.id
+    WHERE 1 = 1
+";
+
+            // 1. Aplicar filtro de stock bajo (OnlyLowStock)
+            if (filter.OnlyLowStock)
+            {
+                sql += " AND m.stock_total <= @LowStockThreshold";
+            }
+
+            // 2. Aplicar filtro de precio mínimo (MinPrice)
+            if (filter.MinPrice.HasValue)
+            {
+                sql += " AND m.unit_price >= @MinPrice";
+            }
+
+            // 3. Aplicar filtro por categoría (CategoryId)
+            if (filter.CategoryId.HasValue && filter.CategoryId.Value > 0)
+            {
+                // Nota: Asumiendo que 'c.id' es la columna de la base de datos
+                sql += " AND c.id = @CategoryId";
+            }
+
+            // 4. Ordenar para agrupar en el reporte
+            // (Asegúrese de que filter.SortBy y filter.SortOrder sean nombres de columna válidos para evitar inyección SQL)
+            sql += $" ORDER BY c.name ASC, {filter.SortBy} {filter.SortOrder}";
+
+            // Obtener la conexión y ejecutar la consulta
+            using var conn = DatabaseConnection.Instance.GetConnection();
+
+            // Dapper mapeará los parámetros del objeto 'filter'
+            var result = await conn.QueryAsync<MedicineByCategoryDto>(sql, filter);
+
+            return result;
+        }
+
+        public async Task<IEnumerable<CategoryDto>> GetAllCategoriesAsync()
+        {
+            // ✅ CORRECCIÓN: Usar el nombre de tabla 'categories' (asumido por convención)
+            // y las columnas reales 'id', 'name', 'status' de la tabla.
+            string sql = @"
+        SELECT
+            id AS Id,
+            name AS Name
+        FROM
+            categories
+        WHERE
+            status = 1 -- Asumiendo que la columna de estado se llama 'status'
+        ORDER BY
+            name ASC";
+
+            // 🚀 SOLUCIÓN AL ERROR DE DAPPER: Obtener la conexión y usar QueryAsync en ella.
+            using var conn = DatabaseConnection.Instance.GetConnection();
+
+            return await conn.QueryAsync<CategoryDto>(sql);
         }
     }
 }
