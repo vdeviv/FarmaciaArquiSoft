@@ -8,8 +8,8 @@ using System.Security.Cryptography;
 using ProviderEntity = ServiceProvider.Domain.Provider;
 
 namespace FarmaView.Pages.Provider
-{ 
-        [BindProperties]
+{
+    [BindProperties]
     public class EditModel : PageModel
     {
         private readonly IRepository<ProviderEntity> _providerRepository;
@@ -29,7 +29,7 @@ namespace FarmaView.Pages.Provider
         {
             if (string.IsNullOrWhiteSpace(id))
             {
-                TempData["Error"] = "ID de proveedor no proporcionado.";
+                TempData["ErrorMessage"] = "ID de proveedor no proporcionado.";
                 return RedirectToPage("/Provider/IndexProvider");
             }
 
@@ -40,12 +40,12 @@ namespace FarmaView.Pages.Provider
             }
             catch (FormatException)
             {
-                TempData["Error"] = "Formato de ID inválido.";
+                TempData["ErrorMessage"] = "Formato de ID inválido.";
                 return RedirectToPage("/Provider/IndexProvider");
             }
             catch (CryptographicException)
             {
-                TempData["Error"] = "Error de seguridad con el ID.";
+                TempData["ErrorMessage"] = "Error de seguridad con el ID.";
                 return RedirectToPage("/Provider/IndexProvider");
             }
 
@@ -54,7 +54,7 @@ namespace FarmaView.Pages.Provider
 
             if (found is null)
             {
-                TempData["Error"] = "Proveedor no encontrado o eliminado.";
+                TempData["ErrorMessage"] = "Proveedor no encontrado o eliminado.";
                 return RedirectToPage("/Provider/IndexProvider");
             }
 
@@ -68,16 +68,17 @@ namespace FarmaView.Pages.Provider
 
             try
             {
+              
+                Input.updated_by = 1;
                 await _providerRepository.Update(Input);
+                TempData["SuccessMessage"] = "Proveedor actualizado correctamente.";
+                return RedirectToPage("/Provider/IndexProvider");
             }
             catch (MySqlException ex) when (ex.Number == 1062)
             {
                 ModelState.AddModelError(string.Empty, "NIT o Email ya están registrados para otro proveedor.");
                 return Page();
             }
-
-            TempData["Success"] = "Proveedor actualizado correctamente.";
-            return RedirectToPage("/Provider/IndexProvider");
         }
     }
 }

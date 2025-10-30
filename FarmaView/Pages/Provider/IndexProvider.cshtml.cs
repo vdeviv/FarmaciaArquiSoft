@@ -24,24 +24,21 @@ namespace FarmaView.Pages.Provider
         public async Task OnGetAsync()
         {
             Providers = await _providerService.ListAsync();
-
-            foreach (var p in Providers)
-            {
-                EncryptedIds[p.id] = _encryptionService.EncryptId(p.id);
-            }
+            EncryptedIds = Providers.ToDictionary(p => p.id, p => _encryptionService.EncryptId(p.id));
         }
 
         public async Task<IActionResult> OnPostDeleteAsync(int id)
         {
-            const int ACTOR_ID = 1;
             try
             {
+                
+                const int ACTOR_ID = 1;
                 await _providerService.SoftDeleteAsync(id, ACTOR_ID);
                 TempData["SuccessMessage"] = "Proveedor eliminado correctamente.";
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"Ocurrió un error al eliminar: {ex.Message}";
+                TempData["ErrorMessage"] = $"No se pudo eliminar el proveedor: {ex.Message}";
             }
             return RedirectToPage();
         }

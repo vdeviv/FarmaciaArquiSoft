@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ServiceProvider.Application.DTOS
+﻿namespace ServiceProvider.Application.DTOS
 {
     public record ProviderCreateDto(
         string FirstName,
-        string LastName,
+        string? SecondName,
+        string LastFirstName,
+        string? LastSecondName,
         string? Nit,
         string? Address,
         string? Email,
@@ -18,7 +14,9 @@ namespace ServiceProvider.Application.DTOS
 
     public record ProviderUpdateDto(
         string FirstName,
-        string LastName,
+        string? SecondName,
+        string LastFirstName,
+        string? LastSecondName,
         string? Nit,
         string? Address,
         string? Email,

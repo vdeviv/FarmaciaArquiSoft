@@ -20,10 +20,12 @@ namespace ServiceProvider.Application
 
         public async Task<Provider> RegisterAsync(ProviderCreateDto dto, int actorId)
         {
-            var newProvider = new Provider
+            var entity = new Provider
             {
                 first_name = dto.FirstName,
-                last_name = dto.LastName,
+                second_name = dto.SecondName,
+                last_first_name = dto.LastFirstName,
+                last_second_name = dto.LastSecondName,
                 nit = dto.Nit,
                 address = dto.Address,
                 email = dto.Email,
@@ -33,31 +35,26 @@ namespace ServiceProvider.Application
                 created_by = actorId
             };
 
-            var created = await _providerRepository.Create(newProvider);
+            var created = await _providerRepository.Create(entity);
             return created;
         }
 
-        public async Task<Provider?> GetByIdAsync(int id)
-        {
-            var reference = new Provider { id = id };
-            return await _providerRepository.GetById(reference);
-        }
+        public Task<Provider?> GetByIdAsync(int id)
+            => _providerRepository.GetById(new Provider { id = id });
 
-        public async Task<IEnumerable<Provider>> ListAsync()
-        {
-            return await _providerRepository.GetAll();
-        }
+        public Task<IEnumerable<Provider>> ListAsync()
+            => _providerRepository.GetAll();
 
         public async Task UpdateAsync(int id, ProviderUpdateDto dto, int actorId)
         {
-            var reference = new Provider { id = id };
-            var existing = await _providerRepository.GetById(reference);
-
-            if (existing == null)
+            var existing = await _providerRepository.GetById(new Provider { id = id });
+            if (existing is null)
                 throw new ArgumentException($"Proveedor con ID {id} no encontrado.");
 
             existing.first_name = dto.FirstName;
-            existing.last_name = dto.LastName;
+            existing.second_name = dto.SecondName;
+            existing.last_first_name = dto.LastFirstName;
+            existing.last_second_name = dto.LastSecondName;
             existing.nit = dto.Nit;
             existing.address = dto.Address;
             existing.email = dto.Email;
@@ -71,10 +68,8 @@ namespace ServiceProvider.Application
 
         public async Task SoftDeleteAsync(int id, int actorId)
         {
-            var reference = new Provider { id = id };
-            var existing = await _providerRepository.GetById(reference);
-
-            if (existing == null)
+            var existing = await _providerRepository.GetById(new Provider { id = id });
+            if (existing is null)
                 throw new ArgumentException($"Proveedor con ID {id} no encontrado.");
 
             existing.updated_by = actorId;

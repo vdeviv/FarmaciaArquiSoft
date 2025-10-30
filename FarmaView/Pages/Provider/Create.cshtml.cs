@@ -18,7 +18,7 @@ namespace FarmaView.Pages.Provider
 
         public CreateModel()
         {
-            // Igual que Client: usar Factory directa
+            
             var factory = new ProviderRepositoryFactory();
             _providerRepository = factory.CreateRepository<ProviderEntity>();
         }
@@ -31,21 +31,24 @@ namespace FarmaView.Pages.Provider
 
             try
             {
-                // status por defecto true (activo) si no vino del form
-                if (Input.status == false && Request.Form["Input.status"].Count == 0)
+                
+                Input.is_deleted = false;
+                if (Request.Form["Input.status"].Count == 0)
                     Input.status = true;
 
+                
+                Input.created_by = 1;
+
                 await _providerRepository.Create(Input);
+                TempData["SuccessMessage"] = "Proveedor creado correctamente.";
+                return RedirectToPage("/Provider/IndexProvider");
             }
-            catch (MySqlException ex) when (ex.Number == 1062) // Duplicate entry
+            catch (MySqlException ex) when (ex.Number == 1062) 
             {
-                // Duplicados posibles: nit, email
+                
                 ModelState.AddModelError(string.Empty, "NIT o Email ya están registrados para otro proveedor.");
                 return Page();
             }
-
-            TempData["SuccessMessage"] = "Proveedor creado correctamente.";
-            return RedirectToPage("/Provider/IndexProvider");
         }
     }
 }
