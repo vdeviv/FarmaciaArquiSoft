@@ -9,7 +9,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace Farmacia_Arqui_Soft.Pages.Users
+namespace FarmaView.Pages.Users
 {
     public class EditModel : PageModel
     {

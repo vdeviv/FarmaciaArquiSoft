@@ -1,61 +1,65 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using MySql.Data.MySqlClient;
-using ServiceClient.Infrastructure;
-using ServiceCommon.Domain.Ports;
-
+using ServiceClient.Application;            // IClientService + excepciones (Domain/Validation)
+using ServiceClient.Application.DTOS;
 using ClientEntity = ServiceClient.Domain.Client;
 
 namespace FarmaView.Pages.Client
 {
-    // Se añade [BindProperties] para que Input se cargue automáticamente
-    [BindProperties]
     public class CreateModel : PageModel
     {
-        private readonly IRepository<ClientEntity> _ClientRepository; // Usa ClientEntity
+        private readonly IClientService _clients;
 
-        // ❌ Eliminado: private readonly IValidator<ClientEntity> _validator; 
+        public CreateModel(IClientService clients)
+        {
+            _clients = clients;
+        }
 
         [BindProperty]
-        public ClientEntity Input { get; set; } = new ClientEntity { }; // Usa ClientEntity
+        public ClientEntity Input { get; set; } = new ClientEntity();
 
-        // Se elimina la inyección de IValidator y se inicializa el repositorio
-        public CreateModel()
-        {
-            // Se elimina la asignación de _validator
+        public void OnGet() { }
 
-            var factory = new ClientRepositoryFactory();
-            _ClientRepository = factory.CreateRepository<ClientEntity>();
-        }
-
-        public void OnGet()
-        {
-            // Este método se deja vacío intencionalmente.
-        }
-
-
-        // ✅ Se deja [ValidateAntiForgeryToken] ya que esta es la acción de POST
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> OnPostAsync()
         {
-            // Paso 1: Únicamente validamos el modelo usando Data Annotations (ModelState.IsValid)
             if (!ModelState.IsValid) return Page();
 
-            // ❌ Eliminado: Se quitó toda la lógica de validación con _validator.Validate(Input)
+            var dto = new ClientCreateDto(
+                FirstName: Input.first_name,
+                LastName: Input.last_name,
+                email: Input.email,
+                nit: Input.nit
+            );
+
+            // Igual que en Users: usa un actor fijo o del claim si ya lo tienes
+            var actorId = int.TryParse(User.FindFirst("UserId")?.Value, out var uid) ? uid : 1;
 
             try
             {
-                // Paso 2: Crear el registro en la base de datos
-                await _ClientRepository.Create(Input);
+                await _clients.RegisterAsync(dto, actorId);
+                TempData["SuccessMessage"] = "Cliente creado correctamente.";
+                return RedirectToPage("/Client/IndexClient");
             }
-            catch (MySqlException ex) when (ex.Number == 1062) // Error 1062: Entrada duplicada (ej. email)
+            catch (ServiceClient.Application.ValidationException vex)
             {
-                // Paso 3: Manejar la excepción de duplicidad específica de MySQL
-                ModelState.AddModelError("Input.email", "Ese email ya se encuentra vinculado a otro cliente. Por favor, usa uno distinto.");
+                // Igual que Users: mostrar arriba (summary). No prefijamos "Input."
+                foreach (var kv in vex.Errors)
+                    ModelState.AddModelError(kv.Key ?? string.Empty, kv.Value);
+
                 return Page();
             }
-
-            TempData["SuccessMessage"] = "Cliente creado correctamente.";
-            return RedirectToPage("/Client/IndexClient");
+            catch (ServiceClient.Application.DomainException ex)
+            {
+                // Reglas de negocio (únicos, etc.) → también arriba
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"Ocurrió un error al crear el cliente: {ex.Message}");
+                return Page();
+            }
         }
     }
 }

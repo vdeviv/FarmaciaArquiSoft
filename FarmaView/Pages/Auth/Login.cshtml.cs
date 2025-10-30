@@ -6,7 +6,7 @@ using ServiceUser.Domain;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
-namespace Farmacia_Arqui_Soft.Pages.Auth
+namespace FarmaView.Pages.Auth
 {
     public class LoginModel : PageModel
     {

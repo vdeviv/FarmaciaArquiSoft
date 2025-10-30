@@ -9,6 +9,8 @@ using ServiceReports.Application.DTOs;
 namespace ServiceReports.Application.Interfaces
 {
     public interface IClientFidelityReportService
-    {        Task<byte[]> GeneratePdfReportAsync(ClientFidelityFilter filter, string generatedBy, string logoPath);
+    {
+        Task<byte[]> GeneratePdfReportAsync(ClientFidelityFilter filter, string generatedBy, string logoPath);
+        Task<byte[]> GenerateExcelReportAsync(ClientFidelityFilter filter);
     }
 }

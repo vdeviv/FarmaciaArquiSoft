@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Farmacia_Arqui_Soft.Pages.Users
+namespace FarmaView.Pages.Users
 {
     [Authorize(Roles = "Administrador")]
     public class IndexModel : PageModel

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using ServiceUser.Domain;
 using System.Security.Claims;
 
-namespace Farmacia_Arqui_Soft.Pages.Users
+namespace FarmaView.Pages.Users
 {
     [Authorize]
     public class ProfileModel : PageModel

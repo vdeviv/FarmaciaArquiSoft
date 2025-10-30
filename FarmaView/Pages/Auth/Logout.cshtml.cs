@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Farmacia_Arqui_Soft.Pages.Auth
+namespace FarmaView.Pages.Auth
 {
     public class LogoutModel : PageModel
     {

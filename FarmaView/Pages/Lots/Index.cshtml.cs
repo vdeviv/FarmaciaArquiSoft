@@ -1,50 +1,67 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using ServiceLot.Application;
+using ServiceCommon.Application;           // IEncryptionService
 using ServiceCommon.Domain.Ports;
-using LotEntity = ServiceLot.Domain.Lot;
+using ServiceLot.Application;
+using ServiceLot.Domain;
+using System.Security.Cryptography;
 
 namespace FarmaView.Pages.Lots
 {
     public class IndexModel : PageModel
     {
         private readonly LotService _service;
-        private readonly IEncryptionService _encryptionService;
+        private readonly IEncryptionService _encryption;
 
-        public IEnumerable<LotEntity> Lots { get; set; } = new List<LotEntity>();
+        public IList<Lot> Lots { get; private set; } = new List<Lot>();
 
-        public IndexModel(IEncryptionService encryptionService)
+        public IndexModel(LotService service, IEncryptionService encryption)
         {
-            _service = new LotService(); // sin validator
-            _encryptionService = encryptionService;
+            _service = service;
+            _encryption = encryption;
         }
 
         public async Task OnGetAsync()
         {
-            Lots = await _service.GetAllAsync();
+            Lots = (await _service.GetAllAsync()).ToList();
         }
 
+        // El formulario del modal debe enviar un campo hidden con name="encryptedId"
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> OnPostDeleteAsync(string encryptedId)
         {
+            if (string.IsNullOrWhiteSpace(encryptedId))
+            {
+                TempData["ErrorMessage"] = "ID de lote no proporcionado.";
+                return RedirectToPage();
+            }
+
             int id;
             try
             {
-                id = _encryptionService.DecryptId(encryptedId);
+                id = _encryption.DecryptId(encryptedId);
             }
             catch (FormatException)
             {
-                TempData["ErrorMessage"] = "ID de lote inválido o corrupto.";
+                TempData["ErrorMessage"] = "ID inválido.";
                 return RedirectToPage();
             }
-
-            var success = await _service.SoftDeleteAsync(id);
-            if (!success)
+            catch (CryptographicException)
             {
-                TempData["ErrorMessage"] = "Error al eliminar el lote. El lote no fue encontrado.";
+                TempData["ErrorMessage"] = "Error de seguridad con el ID.";
                 return RedirectToPage();
             }
 
-            TempData["SuccessMessage"] = "Lote eliminado correctamente.";
+            try
+            {
+                await _service.SoftDeleteAsync(id);
+                TempData["SuccessMessage"] = "Lote eliminado correctamente.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"No se pudo eliminar el lote: {ex.Message}";
+            }
+
             return RedirectToPage();
         }
     }
