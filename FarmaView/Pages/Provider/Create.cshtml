@@ -1,0 +1,53 @@
+﻿@page
+@model FarmaView.Pages.Provider.CreateModel
+@{
+    ViewData["Title"] = "Nuevo proveedor";
+}
+
+<h2>Nuevo proveedor</h2>
+
+<form method="post">
+    <div class="mb-3">
+        <label class="form-label">Nombres</label>
+        <input asp-for="Input.first_name" class="form-control" />
+        <span asp-validation-for="Input.first_name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Apellidos</label>
+        <input asp-for="Input.last_name" class="form-control" />
+        <span asp-validation-for="Input.last_name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">NIT</label>
+        <input asp-for="Input.nit" class="form-control" />
+        <span asp-validation-for="Input.nit" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Dirección</label>
+        <textarea asp-for="Input.address" class="form-control"></textarea>
+        <span asp-validation-for="Input.address" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input asp-for="Input.email" class="form-control" />
+        <span asp-validation-for="Input.email" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Teléfono</label>
+        <input asp-for="Input.phone" class="form-control" />
+        <span asp-validation-for="Input.phone" class="text-danger"></span>
+    </div>
+
+    <div class="form-check mb-3">
+        <input class="form-check-input" asp-for="Input.status" />
+        <label class="form-check-label" for="Input_status">Activo</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a asp-page="/Provider/IndexProvider" class="btn btn-secondary">Cancelar</a>
+</form>

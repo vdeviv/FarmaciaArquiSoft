@@ -15,8 +15,11 @@ using ServiceUser.Domain.Validators;
 using ServiceUser.Infraestructure.Persistence;
 using System.Globalization;
 using ClientEntity = ServiceClient.Domain.Client;
+using ServiceProvider.Application;
+using ServiceProvider.Infraestructure;
+using ProviderEntity = ServiceProvider.Domain.Provider;
 
-// USINGS AÑADIDOS DE LA RAMA ReportesS
+// USINGS AÑADIDOS DE LA RAMA Reportes
 using ServiceReports.Application;
 using ServiceReports.Infrastructure;
 using ServiceReports.Infrastructure.Repositories;
@@ -47,14 +50,19 @@ builder.Services.AddRazorPages()
 
 builder.Services.AddSingleton<IEncryptionService, EncryptionService>();
 
+
 // =========================================================================
-// REGISTROS DE SERVICIOS EXISTENTES (CLIENTES Y LOTES)
+// REGISTROS DE SERVICIOS EXISTENTES (CLIENTES, LOTES Y PROVEEDORES)
 // =========================================================================
 builder.Services.AddScoped<IRepository<ClientEntity>, ClientRepository>();
 builder.Services.AddScoped<IClientService, ClientService>();
 
 builder.Services.AddScoped<IRepository<LotEntity>, LotRepository>();
 builder.Services.AddScoped<LotService>();
+
+// >>> NUEVO: Provider
+builder.Services.AddScoped<IRepository<ProviderEntity>, ProviderRepository>();
+builder.Services.AddScoped<IProviderService, ProviderService>();
 
 // =========================================================================
 // REGISTROS DE SERVICIOS DE USUARIO Y AUTENTICACIÓN (RAMA MAIN)

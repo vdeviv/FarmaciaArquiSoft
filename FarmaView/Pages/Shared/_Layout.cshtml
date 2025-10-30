@@ -37,12 +37,8 @@
                 </button>
 
                 <div class="collapse navbar-collapse" id="navmenu">
-
-                    @* NECESARIO PARA ACCEDER A LOS ROLES *@
                     @using System.Security.Claims
-
                     <ul class="navbar-nav ms-auto align-items-center gap-3">
-
                         @{
                             var currentRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "SinRol";
                         }
@@ -52,11 +48,9 @@
                             <li class="nav-item"><a class="nav-link text-white fw-semibold" asp-page="/Users/Index">Usuarios</a></li>
                         }
 
-                        <li class="nav-item">
-                            <a class="nav-link ..." asp-page="/Client/IndexClient">Clientes</a>
-                        </li>
+                        <li class="nav-item"><a class="nav-link text-white fw-semibold" asp-page="/Client/IndexClient">Clientes</a></li>
                         <li class="nav-item"><a class="nav-link text-white fw-semibold" asp-page="/Lots/Index">Lotes</a></li>
-                        <li class="nav-item"><a class="nav-link text-white fw-semibold" asp-page="/Providers/Index">Proveedores</a></li>
+                        <li class="nav-item"><a class="nav-link text-white fw-semibold" asp-page="/Provider/IndexProvider">Proveedores</a></li>
                         <li class="nav-item"><a class="nav-link text-white fw-semibold" asp-page="/Reports/Index">Reportes</a></li>
                     </ul>
 
@@ -75,18 +69,9 @@
                                         Rol: <strong>@role</strong>
                                     </li>
                                     <li><hr class="dropdown-divider" /></li>
-                                    <li>
-                                        <a class="dropdown-item" asp-page="/Users/Profile">
-                                            <i class="bi bi-person-badge me-2"></i> Mi perfil
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-page="/Auth/ChangePassword">
-                                            <i class="bi bi-shield-lock me-2"></i> Cambiar contraseña
-                                        </a>
-                                    </li>
+                                    <li><a class="dropdown-item" asp-page="/Users/Profile"><i class="bi bi-person-badge me-2"></i> Mi perfil</a></li>
+                                    <li><a class="dropdown-item" asp-page="/Auth/ChangePassword"><i class="bi bi-shield-lock me-2"></i> Cambiar contraseña</a></li>
                                     <li><hr class="dropdown-divider" /></li>
-
                                     <li>
                                         <form method="post" asp-page="/Auth/Logout" class="px-3">
                                             <button type="submit" class="btn btn-sm btn-outline-danger w-100 rounded-pill">
@@ -124,61 +109,9 @@
         </div>
     </footer>
 
-    <div class="modal fade" id="globalModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content text-center p-4 rounded-4 shadow-lg border-0">
-                <div id="modalIcon" class="mb-3 display-4"></div>
-                <h4 id="modalTitle" class="fw-bold mb-2"></h4>
-                <p id="modalMessage" class="text-muted mb-0"></p>
-            </div>
-
-        </div>
-    </div>
-
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
-
-    <script>
-        function showModal(message, type = "success") {
-            const modalTitle = document.getElementById("modalTitle");
-            const modalMessage = document.getElementById("modalMessage");
-            const modalIcon = document.getElementById("modalIcon");
-            const modal = new bootstrap.Modal(document.getElementById('globalModal'));
-
-            if (type === "success") {
-                modalTitle.textContent = "¡Operación Exitosa!";
-                modalIcon.innerHTML = '<i class="bi bi-check-circle-fill text-success animate__animated animate__zoomIn"></i>';
-            } else if (type === "error") {
-                modalTitle.textContent = "Error en la Operación";
-                modalIcon.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-danger animate__animated animate__shakeX"></i>';
-            } else if (type === "warning") {
-                modalTitle.textContent = "Atención";
-                modalIcon.innerHTML = '<i class="bi bi-exclamation-circle-fill text-warning animate__animated animate__bounceIn"></i>';
-            }
-
-            modalMessage.textContent = message;
-            modal.show();
-            setTimeout(() => modal.hide(), 2500);
-        }
-    </script>
-
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <script>
-            document.addEventListener("DOMContentLoaded", () => {
-                showModal("@TempData["SuccessMessage"]", "success");
-            });
-        </script>
-    }
-
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <script>
-            document.addEventListener("DOMContentLoaded", () => {
-                showModal("@TempData["ErrorMessage"]", "error");
-            });
-        </script>
-    }
 </body>
 </html>

@@ -1,0 +1,99 @@
+﻿@page
+@model FarmaView.Pages.Provider.IndexProviderModel
+@{
+    ViewData["Title"] = "Proveedores";
+}
+
+<h2 class="mb-3">Proveedores</h2>
+
+@if (TempData["SuccessMessage"] is string sm)
+{
+    <div class="alert alert-success">@sm</div>
+}
+@if (TempData["ErrorMessage"] is string em)
+{
+    <div class="alert alert-danger">@em</div>
+}
+
+<a asp-page="/Provider/Create" class="btn btn-primary mb-3">
+    <i class="bi bi-plus-circle me-1"></i> Nuevo proveedor
+</a>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Nombres</th>
+                <th>Apellidos</th>
+                <th>NIT</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Estado</th>
+                <th class="text-end" style="width: 200px;">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Providers != null && Model.Providers.Any())
+            {
+                foreach (var p in Model.Providers)
+                {
+                    var encId = Model.EncryptedIds[p.id];
+                    <tr>
+                        <td>@p.first_name</td>
+                        <td>@p.last_name</td>
+                        <td>@p.nit</td>
+                        <td>@p.email</td>
+                        <td>@p.phone</td>
+                        <td>
+                            @if (p.status)
+                            {
+                                <span class="badge bg-success rounded-pill px-3 py-2">Activo</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary rounded-pill px-3 py-2">Inactivo</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <a asp-page="/Provider/Edit"
+                               asp-route-id="@encId"
+                               class="btn btn-sm btn-warning me-2">
+                                <i class="bi bi-pencil me-1"></i> Editar
+                            </a>
+
+                            <button type="button"
+                                    class="btn btn-sm btn-danger"
+                                    onclick="openDeleteProviderModal(@p.id)">
+                                <i class="bi bi-trash me-1"></i> Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        No hay proveedores registrados.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@await Html.PartialAsync("_DeleteProviderModalPartial")
+
+@section Scripts {
+    <script>
+        // Abre el modal de eliminación y pasa el ID del proveedor
+        window.openDeleteProviderModal = function (id) {
+            const input = document.getElementById('providerIdToDelete');
+            if (input) input.value = id;
+
+            const modalEl = document.getElementById('deleteProviderModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+    </script>
+}

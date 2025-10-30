@@ -1,0 +1,28 @@
+﻿<div class="modal fade" id="deleteProviderModal" tabindex="-1" aria-labelledby="deleteProviderLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteProviderLabel">Eliminar proveedor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <div class="modal-body">
+                <p class="mb-0">
+                    ¿Estás seguro de eliminar este proveedor? Esta acción marcará el registro como <b>eliminado</b>
+                    (borrado lógico) y dejará de mostrarse en el listado.
+                </p>
+            </div>
+
+            <div class="modal-footer">
+                <form method="post" asp-page-handler="Delete" id="deleteProviderForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="providerIdToDelete" value="@Model" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
