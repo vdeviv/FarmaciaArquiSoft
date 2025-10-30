@@ -127,6 +127,15 @@ builder.Services.AddScoped<IClientFidelityReportBuilder, ExcelClientFidelityRepo
 builder.Services.AddScoped<IClientFidelityReportService, ClientFidelityReportService>();
 
 // =========================================================
+// 💊 Reportes de Medicinas por Categoría
+// =========================================================
+// Necesitas añadir los Builders y el Service (Director) para el nuevo reporte
+builder.Services.AddScoped<IMedicineByCategoryReportBuilder, PdfMedicineByCategoryReportBuilder>();
+builder.Services.AddScoped<IMedicineByCategoryReportBuilder, ExcelMedicineByCategoryReportBuilder>();
+builder.Services.AddScoped<IMedicineByCategoryReportService, MedicineByCategoryReportService>();
+
+
+// =========================================================
 // 🚀 Construcción de la app
 // =========================================================
 var app = builder.Build();
