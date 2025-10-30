@@ -1,11 +1,9 @@
-﻿// Ruta: ServiceReports.Infrastructure.Repositories/ReportRepository.cs
-
-using ServiceReports.Application.DTOs;
+﻿using ServiceReports.Application.DTOs;
 using ServiceCommon;
 using Dapper;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ServiceCommon.Infrastructure.Data; // Asumo esta ruta para DatabaseConnection
+using ServiceCommon.Infrastructure.Data;
 using System.Threading;
 
 namespace ServiceReports.Infrastructure.Repositories
@@ -16,12 +14,27 @@ namespace ServiceReports.Infrastructure.Repositories
 
         public ReportRepository()
         {
-            // Asumo que tu DatabaseConnection es un Singleton o es inyectada.
             _db = DatabaseConnection.Instance;
         }
 
-        public async Task<IEnumerable<ClientFidelityDto>> GetClientFidelityAsync(ClientFidelityFilter filter, CancellationToken ct = default)
+        public async Task<IEnumerable<ClientFidelityDto>> GetClientFidelityAsync(
+            ClientFidelityFilter filter,
+            CancellationToken ct = default)
         {
+            // 🚀 DETERMINAR EL LÍMITE: Si hay TopN, usarlo; sino, usar 100
+            int limit = filter.TopN ?? 100;
+
+            // 🚀 Si es Top N, forzar ordenamiento por TotalSpent DESC
+            string sortBy = filter.SortBy ?? "FullName";
+            string sortOrder = filter.SortOrder ?? "ASC";
+
+            if (filter.IsTopNFilter)
+            {
+                // Para Top N, siempre ordenar por TotalSpent descendente
+                sortBy = "TotalSpent";
+                sortOrder = "DESC";
+            }
+
             const string sql = @"
                 SELECT 
                     c.id AS ClientId,
@@ -46,7 +59,8 @@ namespace ServiceReports.Infrastructure.Repositories
 
                     CASE WHEN @SortBy = 'SalesCount' AND @SortOrder = 'ASC' THEN SalesCount END ASC,
                     CASE WHEN @SortBy = 'SalesCount' AND @SortOrder = 'DESC' THEN SalesCount END DESC
-                LIMIT 100;
+                    
+                LIMIT @Limit;
             ";
 
             using var conn = DatabaseConnection.Instance.GetConnection();
@@ -56,8 +70,9 @@ namespace ServiceReports.Infrastructure.Repositories
                 filter.StartDate,
                 filter.EndDate,
                 MinTotal = filter.MinTotal ?? 0,
-                SortBy = filter.SortBy ?? "FullName",
-                SortOrder = filter.SortOrder ?? "ASC"
+                SortBy = sortBy,
+                SortOrder = sortOrder,
+                Limit = limit // 🚀 USAR LÍMITE DINÁMICO
             });
 
             return result;

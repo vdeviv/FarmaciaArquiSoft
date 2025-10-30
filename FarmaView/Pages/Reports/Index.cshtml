@@ -40,8 +40,28 @@
                     </div>
                 </div>
 
-                <!-- Ordenamiento -->
+                <!-- Filtro Top N -->
                 <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="Filter_TopN" class="form-label fw-bold">
+                            <i class="bi bi-trophy"></i> Top Clientes
+                        </label>
+                        <select asp-for="Filter.TopN" class="form-select" id="topNSelect">
+                            <option value="">Todos los clientes (hasta 100)</option>
+                            <option value="5">Top 5 Clientes</option>
+                            <option value="10">Top 10 Clientes</option>
+                            <option value="20">Top 20 Clientes</option>
+                            <option value="50">Top 50 Clientes</option>
+                        </select>
+                        <small class="text-muted">
+                            💡 Cuando seleccionas "Top N", se mostrarán los clientes con mayor gasto total,
+                            independientemente del orden que elijas abajo.
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Ordenamiento -->
+                <div class="row" id="sortingSection">
                     <div class="col-md-6 mb-3">
                         <label for="Filter_SortBy" class="form-label fw-bold">Ordenar por</label>
                         <select asp-for="Filter.SortBy" class="form-select">
@@ -94,7 +114,15 @@
         <div class="card shadow-sm">
             <div class="card-header bg-success text-white">
                 <h5 class="mb-0">
-                    <i class="bi bi-table"></i> Resultados del Reporte
+                    <i class="bi bi-table"></i>
+                    @if (Model.Filter.IsTopNFilter)
+                    {
+                        <span>🏆 Top @Model.Filter.TopN Clientes - Mayor Gasto</span>
+                    }
+                    else
+                    {
+                        <span>Resultados del Reporte</span>
+                    }
                     <span class="badge bg-light text-dark float-end">
                         Total: @Model.ReportData.Count() cliente(s)
                     </span>
@@ -105,6 +133,10 @@
                     <table class="table table-hover table-striped mb-0">
                         <thead class="table-dark">
                             <tr>
+                                @if (Model.Filter.IsTopNFilter)
+                                {
+                                    <th scope="col" class="text-center" style="width: 50px;">#</th>
+                                }
                                 <th scope="col">Cliente</th>
                                 <th scope="col" class="text-center">NIT</th>
                                 <th scope="col" class="text-center">Compras</th>
@@ -114,9 +146,33 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @{
+                                int ranking = 1;
+                            }
                             @foreach (var client in Model.ReportData)
                             {
                                 <tr>
+                                    @if (Model.Filter.IsTopNFilter)
+                                    {
+                                        <td class="text-center">
+                                            @if (ranking == 1)
+                                            {
+                                                <span class="badge bg-warning text-dark" style="font-size: 1.2em;">🥇</span>
+                                            }
+                                            else if (ranking == 2)
+                                            {
+                                                <span class="badge bg-secondary" style="font-size: 1.2em;">🥈</span>
+                                            }
+                                            else if (ranking == 3)
+                                            {
+                                                <span class="badge bg-danger" style="font-size: 1.2em;">🥉</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-info text-dark">@ranking</span>
+                                            }
+                                        </td>
+                                    }
                                     <td>
                                         <strong>@client.FullName</strong>
                                     </td>
@@ -143,11 +199,12 @@
                                         }
                                     </td>
                                 </tr>
+                                ranking++;
                             }
                         </tbody>
                         <tfoot class="table-light">
                             <tr>
-                                <td colspan="3" class="text-end fw-bold">TOTALES:</td>
+                                <td colspan="@(Model.Filter.IsTopNFilter ? "4" : "3")" class="text-end fw-bold">TOTALES:</td>
                                 <td class="text-end fw-bold text-success">
                                     @Model.ReportData.Sum(c => c.TotalSpent).ToString("C2")
                                 </td>
@@ -173,4 +230,38 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Script para manejar el comportamiento del Top N
+        document.addEventListener('DOMContentLoaded', function() {
+            const topNSelect = document.getElementById('topNSelect');
+            const sortingSection = document.getElementById('sortingSection');
+            const sortBySelect = document.querySelector('select[name="Filter.SortBy"]');
+            const sortOrderSelect = document.querySelector('select[name="Filter.SortOrder"]');
+
+            function updateSortingState() {
+                const hasTopN = topNSelect.value !== '';
+
+                if (hasTopN) {
+                    // Deshabilitar ordenamiento y mostrar mensaje
+                    sortBySelect.disabled = true;
+                    sortOrderSelect.disabled = true;
+                    sortingSection.style.opacity = '0.5';
+
+                    // Opcional: forzar valores
+                    sortBySelect.value = 'TotalSpent';
+                    sortOrderSelect.value = 'DESC';
+                } else {
+                    // Habilitar ordenamiento
+                    sortBySelect.disabled = false;
+                    sortOrderSelect.disabled = false;
+                    sortingSection.style.opacity = '1';
+                }
+            }
+
+            // Ejecutar al cargar y al cambiar
+            updateSortingState();
+            topNSelect.addEventListener('change', updateSortingState);
+        });
+    </script>
 }
