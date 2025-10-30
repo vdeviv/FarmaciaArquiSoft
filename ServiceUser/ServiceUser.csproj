@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FarmaArquiSoft\FarmaArquiSoft.csproj" />
     <ProjectReference Include="..\ServiceCommon\ServiceCommon.csproj" />
   </ItemGroup>
 
