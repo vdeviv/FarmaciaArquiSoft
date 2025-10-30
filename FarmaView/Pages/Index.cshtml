@@ -1,10 +1,125 @@
 ﻿@page
 @model IndexModel
+@using System.Security.Claims
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Inicio - FarmaPlus";
+    var isAuthenticated = User?.Identity?.IsAuthenticated == true;
+    var role = User?.FindFirst(ClaimTypes.Role)?.Value ?? "Invitado";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@if (!isAuthenticated)
+{
+    <script>
+        window.location.href = '/Auth/Login';
+    </script>
+}
+else
+{
+    <section class="home-section text-center py-5">
+        <div class="container">
+            <img src="~/images/LogoOficial.png" alt="Logo FarmaPlus" class="logo-home mb-4" />
+
+            <h1 class="display-5 fw-bold text-primary">Sistema de Gestión de Farmacia</h1>
+            <p class="lead mb-4 text-muted">
+                Administra clientes, usuarios, proveedores y control de lotes de medicamentos con facilidad y seguridad.
+            </p>
+
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+
+                @if (role == "Administrador")
+                {
+                    <a href="/Client/IndexClient" class="btn btn-custom">Clientes</a>
+                    <a href="/Providers/Index" class="btn btn-custom">Proveedores</a>
+                    <a href="/Lots/Index" class="btn btn-custom">Lotes</a>
+                    <a href="/Users/Index" class="btn btn-custom">Usuarios</a>
+                }
+                else if (role == "Cajero")
+                {
+                    <a href="/Client/IndexClient" class="btn btn-custom">Clientes</a>
+                    <a href="/Lots/Index" class="btn btn-custom">Lotes</a>
+                }
+                else if (role == "Almacenero")
+                {
+                    <a href="/Lots/Index" class="btn btn-custom">Lotes</a>
+                    <a href="/Providers/Index" class="btn btn-custom">Proveedores</a>
+                }
+            </div>
+        </div>
+    </section>
+
+    <section class="features py-5 mt-5">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-3 mb-4">
+                    <div class="card feature-card shadow-sm p-4 h-100">
+                        <h3 class="text-primary mb-3">Gestión de Medicamentos</h3>
+                        <p>Control total sobre existencias, caducidad y precios de los medicamentos.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-4">
+                    <div class="card feature-card shadow-sm p-4 h-100">
+                        <h3 class="text-primary mb-3">Gestión de Clientes</h3>
+                        <p>Organiza la información de tus clientes y mejora el seguimiento de ventas.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-4">
+                    <div class="card feature-card shadow-sm p-4 h-100">
+                        <h3 class="text-primary mb-3">Gestión de Usuarios</h3>
+                        <p>Control de roles y permisos para garantizar la seguridad del sistema.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-4">
+                    <div class="card feature-card shadow-sm p-4 h-100">
+                        <h3 class="text-primary mb-3">Gestión de Proveedores</h3>
+                        <p>Registra y gestiona proveedores para garantizar un abastecimiento confiable.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5 text-center" style="background: linear-gradient(180deg, #fafffa, #e9f5ec);">
+        <div class="container">
+            <h2 class="fw-bold mb-3 text-success">FarmaPlus - Innovando la Gestión Farmacéutica</h2>
+            <p class="text-muted mb-5" style="max-width: 700px; margin: auto;">
+                Un sistema moderno diseñado para mejorar la eficiencia en la venta de medicamentos y la gestión de inventario.
+                Con seguridad basada en roles y un diseño adaptable para cada usuario.
+            </p>
+
+            <div class="row justify-content-center">
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 shadow-sm h-100 p-4">
+                        <div class="card-body">
+                            <i class="bi bi-cash-coin fs-1 text-success"></i>
+                            <h5 class="fw-bold mt-3">Proceso de Venta</h5>
+                            <p class="text-muted">Registra ventas, controla inventario y genera reportes de manera automática.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 shadow-sm h-100 p-4">
+                        <div class="card-body">
+                            <i class="bi bi-shield-lock fs-1 text-success"></i>
+                            <h5 class="fw-bold mt-3">Roles con privilegios</h5>
+                            <p class="text-muted">El sistema diferencia funciones entre Administrador y Empleado, asegurando una gestión controlada.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 shadow-sm h-100 p-4">
+                        <div class="card-body">
+                            <i class="bi bi-bar-chart-line fs-1 text-success"></i>
+                            <h5 class="fw-bold mt-3">Reportes e Indicadores</h5>
+                            <p class="text-muted">Visualiza métricas de stock, ventas y desempeño general de la farmacia.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
