@@ -1,4 +1,4 @@
-using ServiceCommon.Domain.Ports;
+ï»¿using ServiceCommon.Domain.Ports;
 using ServiceCommon.Domain.Validators;
 using ServiceLot.Domain;
 using System;
@@ -25,7 +25,7 @@ namespace ServiceLot.Application
 
         public async Task<Lot> CreateAsync(Lot lot, int actorId = 1)
         {
-            // Normalización
+            // NormalizaciÃ³n
             lot.BatchNumber = lot.BatchNumber?.Trim() ?? string.Empty;
 
             lot.IsDeleted = false;
@@ -34,17 +34,15 @@ namespace ServiceLot.Application
             lot.CreatedAt = DateTime.Now;
             lot.UpdatedAt = DateTime.Now;
 
-            // Validación de dominio
+            // ValidaciÃ³n de dominio
             var vr = _validator.Validate(lot);
             if (!vr.IsSuccess)
                 throw new ValidationException(vr.Errors.ToDictionary());
 
-            // Único por medicina + número de lote (ignora borrados)
+            // âš ï¸ Corregido: El script SQL tiene UNIQUE(batch_number) global, sin importar medicine_id o is_deleted.
             var all = await _repo.GetAll();
-            if (all.Any(x => !x.IsDeleted
-                             && x.MedicineId == lot.MedicineId
-                             && x.BatchNumber.Equals(lot.BatchNumber, StringComparison.OrdinalIgnoreCase)))
-                throw new DomainException("Ya existe un lote con ese número para la misma medicina.");
+            if (all.Any(x => x.BatchNumber.Equals(lot.BatchNumber, StringComparison.OrdinalIgnoreCase)))
+                throw new DomainException("Ya existe un lote con ese nÃºmero (el nÃºmero de lote debe ser Ãºnico globalmente segÃºn la base de datos).");
 
             return await _repo.Create(lot);
         }
@@ -54,7 +52,8 @@ namespace ServiceLot.Application
             var current = await _repo.GetById(new Lot { Id = lot.Id })
                           ?? throw new NotFoundException("Lote no encontrado.");
 
-            // Map + normalización
+            // Map + normalizaciÃ³n
+            // MedicineId ya es 'int' non-nullable
             current.MedicineId = lot.MedicineId;
             current.BatchNumber = (lot.BatchNumber ?? "").Trim();
             current.ExpirationDate = lot.ExpirationDate;
@@ -64,17 +63,17 @@ namespace ServiceLot.Application
             current.UpdatedAt = DateTime.Now;
             current.UpdatedBy = actorId;
 
-            // Validación
+            // ValidaciÃ³n
             var vr = _validator.Validate(current);
             if (!vr.IsSuccess)
                 throw new ValidationException(vr.Errors.ToDictionary());
 
-            // Único por medicina + número de lote (excluye el propio)
+            // âš ï¸ Corregido: El script SQL tiene UNIQUE(batch_number) global.
+            // Se verifica la unicidad global excluyendo solo el propio lote (current.Id).
             var all = await _repo.GetAll();
-            if (all.Any(x => x.Id != current.Id && !x.IsDeleted
-                             && x.MedicineId == current.MedicineId
+            if (all.Any(x => x.Id != current.Id
                              && x.BatchNumber.Equals(current.BatchNumber, StringComparison.OrdinalIgnoreCase)))
-                throw new DomainException("Ya existe otro lote con ese número para la misma medicina.");
+                throw new DomainException("Ya existe otro lote con ese nÃºmero (el nÃºmero de lote debe ser Ãºnico globalmente segÃºn la base de datos).");
 
             await _repo.Update(current);
         }
@@ -92,13 +91,13 @@ namespace ServiceLot.Application
         }
     }
 
-    // Excepciones iguales al patrón que ya usas
+    // Excepciones iguales al patrÃ³n que ya usas
     public class DomainException : Exception { public DomainException(string m) : base(m) { } }
     public class NotFoundException : Exception { public NotFoundException(string m) : base(m) { } }
     public class ValidationException : Exception
     {
         public Dictionary<string, string> Errors { get; }
-        public ValidationException(Dictionary<string, string> errors) : base("Validación de dominio falló.")
+        public ValidationException(Dictionary<string, string> errors) : base("ValidaciÃ³n de dominio fallÃ³.")
             => Errors = errors;
     }
 }

@@ -15,6 +15,11 @@ namespace ServiceLot.Domain.Validators
         {
             var r = Result.Ok();
 
+            // ❌ ELIMINAR/COMENTAR ESTA SECCIÓN PARA HACER MedicineId NO OBLIGATORIO
+            /*
+            if (e.MedicineId <= 0 || e.MedicineId == null)
+                r = r.WithFieldError("MedicineId", "El ID de la medicina es obligatorio.");
+            */
 
             if (string.IsNullOrWhiteSpace(e.BatchNumber))
                 r = r.WithFieldError("BatchNumber", "El número de lote es obligatorio.");
@@ -27,7 +32,6 @@ namespace ServiceLot.Domain.Validators
                     r = r.WithFieldError("BatchNumber", "Solo se permiten letras, números y guiones.");
             }
 
-            // Vencimiento: hoy o futuro (ajusta si debe ser estrictamente futuro)
             if (e.ExpirationDate.Date < DateTime.Today)
                 r = r.WithFieldError("ExpirationDate", "La fecha de vencimiento no puede estar en el pasado.");
 
