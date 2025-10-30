@@ -1,55 +1,49 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Localization;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authentication.Cookies; // 🚀 Re-añadido
+using Microsoft.AspNetCore.Localization; // 🚀 Re-añadido
+using Microsoft.Extensions.Options; // 🚀 Re-añadido
 using ServiceClient.Application;
 using ServiceClient.Infrastructure;
 using ServiceCommon.Application;
 using ServiceCommon.Domain.Ports;
 using ServiceCommon.Infrastructure.Data;
-using ServiceCommon.Infrastructure.Persistence;
+using ServiceCommon.Infrastructure.Persistence; // 🚀 Re-añadido (necesario para persistencia)
 using ServiceLot.Application;
 using ServiceLot.Infrastructure;
-using ServiceUser.Application.Services;
-using ServiceUser.Domain;
-using ServiceUser.Domain.Validators;
-using ServiceUser.Infraestructure.Persistence;
-using System.Globalization;
-using ClientEntity = ServiceClient.Domain.Client;
-
-// USINGS AÑADIDOS DE LA RAMA ReportesS
 using ServiceReports.Application;
-using ServiceReports.Infrastructure;
-using ServiceReports.Infrastructure.Repositories;
 using ServiceReports.Application.DTOs;
 using ServiceReports.Application.Interfaces;
 using ServiceReports.Application.Services;
+using ServiceReports.Infrastructure;
 using ServiceReports.Infrastructure.Reports;
-
+using ServiceReports.Infrastructure.Repositories;
+using ServiceUser.Application.Services;
+using ServiceUser.Domain;
+using ServiceUser.Domain.Validators; // 🚀 Re-añadido
+using ServiceUser.Infraestructure.Persistence; // 🚀 Re-añadido
+using System.Globalization; // 🚀 Re-añadido
+using ClientEntity = ServiceClient.Domain.Client;
 using LotEntity = ServiceLot.Domain.Lot;
 
-
 var builder = WebApplication.CreateBuilder(args);
+
 
 DatabaseConnection.Initialize(builder.Configuration);
 
 builder.Services.AddRazorPages()
-                .AddViewOptions(o =>
-                {
-                    // Desactivar validación del lado del cliente (HTML5/jQuery)
-                    o.HtmlHelperOptions.ClientValidationEnabled = false;
-                })
-                .AddMvcOptions(options =>
-                {
-                    // Desactivar DataAnnotations: solo validaciones personalizadas
-                    options.ModelMetadataDetailsProviders.Clear();
-                    options.ModelValidatorProviders.Clear();
-                });
+
+        .AddViewOptions(o =>
+        {
+            o.HtmlHelperOptions.ClientValidationEnabled = false;
+        })
+        .AddMvcOptions(options =>
+        {
+            options.ModelMetadataDetailsProviders.Clear();
+            options.ModelValidatorProviders.Clear();
+        });
+// --------------------------------------------------------------------------------
 
 builder.Services.AddSingleton<IEncryptionService, EncryptionService>();
 
-// =========================================================================
-// REGISTROS DE SERVICIOS EXISTENTES (CLIENTES Y LOTES)
-// =========================================================================
 builder.Services.AddScoped<IRepository<ClientEntity>, ClientRepository>();
 builder.Services.AddScoped<IClientService, ClientService>();
 
@@ -57,12 +51,13 @@ builder.Services.AddScoped<IRepository<LotEntity>, LotRepository>();
 builder.Services.AddScoped<LotService>();
 
 // =========================================================================
-// REGISTROS DE SERVICIOS DE USUARIO Y AUTENTICACIÓN (RAMA MAIN)
+// SERVICIOS DE USUARIO
 // =========================================================================
 builder.Services.AddScoped<IRepository<User>, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IValidator<User>, UserValidator>();
 
+// CONFIGURACIÓN DE CULTURA
 var supportedCultures = new[] { new CultureInfo("es-BO"), new CultureInfo("es") };
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
@@ -71,39 +66,41 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.SupportedUICultures = supportedCultures;
 });
 
+// CONFIGURACIÓN DE EMAIL
 builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddSingleton<IEmailSender, EmailSender>();
 
+
+// =========================================================================
+// AUTENTICACIÓN
+// =========================================================================
 builder.Services
-                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options =>
-                {
-                    options.LoginPath = "/Auth/Login";
-                    options.AccessDeniedPath = "/Auth/Denied";
-                    options.SlidingExpiration = true;
-                    options.ExpireTimeSpan = TimeSpan.FromHours(8);
-                });
+        .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+        .AddCookie(options =>
+        {
+            options.LoginPath = "/Auth/Login";
+            options.AccessDeniedPath = "/Auth/Denied";
+            options.SlidingExpiration = true;
+            options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        });
 
 builder.Services.AddAuthorization();
 
-
 // =========================================================================
-// REGISTROS DE SERVICIOS DE REPORTES (RAMA ReportesS)
+// SERVICIOS DE REPORTES (CONSOLIDADO)
 // =========================================================================
 builder.Services.AddScoped<ReportRepository>();
-builder.Services.AddScoped<IClientFidelityReportBuilder, PdfClientFidelityReportBuilder>(); // Esta línea estaba causando conflicto
+
+// Registramos dos implementaciones para la misma interfaz
+builder.Services.AddScoped<IClientFidelityReportBuilder, PdfClientFidelityReportBuilder>();
+builder.Services.AddScoped<IClientFidelityReportBuilder, ExcelClientFidelityReportBuilder>();
+
+// El sistema inyectará la colección de Builders arriba registrados aquí
 builder.Services.AddScoped<IClientFidelityReportService, ClientFidelityReportService>();
 
 
 // =========================
-// (Opcional) OTROS SERVICIOS futuros
-// =========================
-// Ejemplo:
-// builder.Services.AddScoped<IRepository<ProviderEntity>, ProviderRepository>();
-// builder.Services.AddScoped<ProviderService>();
-
-// =========================
-// ConstrucciÃ³n de la app
+// Construcción de la app
 // =========================
 var app = builder.Build();
 
@@ -116,6 +113,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// MIDDLEWARE DE LOCALIZACIÓN
 var locOptions = app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>();
 app.UseRequestLocalization(locOptions.Value);
 
@@ -123,18 +121,21 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// MIDDLEWARE DE AUTENTICACIÓN (CRUCIAL)
 app.UseAuthentication();
+
+// MIDDLEWARE PERSONALIZADO PARA FORZAR EL CAMBIO DE CONTRASEÑA
 app.Use(async (ctx, next) =>
 {
     var path = ctx.Request.Path.Value?.ToLowerInvariant() ?? "";
 
-    
     bool allow =
-        path.StartsWith("/auth/login") ||
-        path.StartsWith("/auth/changepassword") ||
-        path.StartsWith("/auth/logout") ||
-        path.StartsWith("/css") || path.StartsWith("/js") ||
-        path.StartsWith("/lib") || path.StartsWith("/images");
+      path.StartsWith("/auth/login") ||
+      path.StartsWith("/auth/changepassword") ||
+      path.StartsWith("/auth/logout") ||
+      path.StartsWith("/css") || path.StartsWith("/js") ||
+      path.StartsWith("/lib") || path.StartsWith("/images");
 
     var authed = ctx.User?.Identity?.IsAuthenticated == true;
     if (authed)
@@ -150,7 +151,7 @@ app.Use(async (ctx, next) =>
     await next();
 });
 
-app.UseAuthorization();
+app.UseAuthorization(); // Ahora en el orden correcto (después de UseAuthentication)
 
 app.MapStaticAssets();
 app.MapRazorPages().WithStaticAssets();

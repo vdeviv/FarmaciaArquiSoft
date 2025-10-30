@@ -4,49 +4,173 @@
     ViewData["Title"] = "Reporte de Fidelidad de Clientes";
 }
 
-<h2 class="text-center mt-4">Reporte de Fidelidad de Clientes</h2>
+<div class="container mt-4">
+    <h2 class="text-center mb-4">
+        <i class="bi bi-graph-up-arrow"></i> Reporte de Fidelidad de Clientes
+    </h2>
 
-<form method="post" class="mt-3">
-    <div class="form-group">
-        <label for="Filter_StartDate">Fecha Inicio</label>
-        <input type="date" asp-for="Filter.StartDate" class="form-control" />
+    <!-- Formulario de Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros de Búsqueda</h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                <div class="row">
+                    <!-- Fecha Inicio -->
+                    <div class="col-md-4 mb-3">
+                        <label for="Filter_StartDate" class="form-label fw-bold">Fecha Inicio</label>
+                        <input type="date" asp-for="Filter.StartDate" class="form-control" required />
+                        <span asp-validation-for="Filter.StartDate" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Fecha Fin -->
+                    <div class="col-md-4 mb-3">
+                        <label for="Filter_EndDate" class="form-label fw-bold">Fecha Fin</label>
+                        <input type="date" asp-for="Filter.EndDate" class="form-control" required />
+                        <span asp-validation-for="Filter.EndDate" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Monto Mínimo -->
+                    <div class="col-md-4 mb-3">
+                        <label for="Filter_MinTotal" class="form-label fw-bold">Gasto Mínimo (Bs.)</label>
+                        <input type="number" asp-for="Filter.MinTotal" class="form-control"
+                               min="0" step="0.01" placeholder="0.00" />
+                        <span asp-validation-for="Filter.MinTotal" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <!-- Ordenamiento -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="Filter_SortBy" class="form-label fw-bold">Ordenar por</label>
+                        <select asp-for="Filter.SortBy" class="form-select">
+                            <option value="FullName">Nombre del Cliente</option>
+                            <option value="TotalSpent">Total Gastado</option>
+                            <option value="SalesCount">Cantidad de Compras</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="Filter_SortOrder" class="form-label fw-bold">Orden</label>
+                        <select asp-for="Filter.SortOrder" class="form-select">
+                            <option value="ASC">Ascendente (A-Z / Menor-Mayor)</option>
+                            <option value="DESC">Descendente (Z-A / Mayor-Menor)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Mensaje de Error -->
+                @if (!ModelState.IsValid)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <div>@error.ErrorMessage</div>
+                        }
+                    </div>
+                }
+
+                <!-- Botones de Acción -->
+                <div class="d-flex gap-2 justify-content-end">
+                    <button type="submit" asp-page-handler="Generate" class="btn btn-primary">
+                        <i class="bi bi-search"></i> Generar Reporte
+                    </button>
+                    <button type="submit" asp-page-handler="ExportPdf" class="btn btn-danger">
+                        <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
+                    </button>
+                    <button type="submit" asp-page-handler="ExportExcel" class="btn btn-success">
+                        <i class="bi bi-file-earmark-excel"></i> Exportar Excel
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-    <div class="form-group mt-2">
-        <label for="Filter_EndDate">Fecha Fin</label>
-        <input type="date" asp-for="Filter.EndDate" class="form-control" />
-    </div>
 
-    <button type="submit" asp-page-handler="Generate" class="btn btn-primary mt-3">
-        Generar Reporte
-    </button>
-    <button type="submit" asp-page-handler="ExportPdf" class="btn btn-success mt-3">
-        Exportar a PDF
-    </button>
-</form>
+    <!-- Tabla de Resultados -->
+    @if (Model.ReportData != null && Model.ReportData.Any())
+    {
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-table"></i> Resultados del Reporte
+                    <span class="badge bg-light text-dark float-end">
+                        Total: @Model.ReportData.Count() cliente(s)
+                    </span>
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col">Cliente</th>
+                                <th scope="col" class="text-center">NIT</th>
+                                <th scope="col" class="text-center">Compras</th>
+                                <th scope="col" class="text-end">Total Gastado</th>
+                                <th scope="col" class="text-end">Ticket Promedio</th>
+                                <th scope="col" class="text-center">Última Compra</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var client in Model.ReportData)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@client.FullName</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary">@(client.ClientNit ?? "S/N")</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-info text-dark">@client.SalesCount</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <strong class="text-success">@client.TotalSpent.ToString("C2")</strong>
+                                    </td>
+                                    <td class="text-end">
+                                        @client.AvgTicket.ToString("C2")
+                                    </td>
+                                    <td class="text-center">
+                                        @if (client.LastSale.HasValue)
+                                        {
+                                            <span class="text-muted">@client.LastSale.Value.ToString("dd/MM/yyyy")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-danger">Sin compras</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold">TOTALES:</td>
+                                <td class="text-end fw-bold text-success">
+                                    @Model.ReportData.Sum(c => c.TotalSpent).ToString("C2")
+                                </td>
+                                <td class="text-end fw-bold">
+                                    @Model.ReportData.Average(c => c.AvgTicket).ToString("C2")
+                                </td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else if (Model.ReportData != null && !Model.ReportData.Any())
+    {
+        <div class="alert alert-warning text-center" role="alert">
+            <i class="bi bi-info-circle"></i>
+            <strong>No se encontraron resultados</strong> para los filtros seleccionados.
+        </div>
+    }
+</div>
 
-@if (Model.ReportData != null)
-{
-    <table class="table table-bordered table-striped mt-4">
-        <thead>
-            <tr>
-                <th>Cliente</th>
-                <th>Cantidad de Compras</th>
-                <th>Total Gastado</th>
-                <th>Promedio</th>
-                <th>Última Compra</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var c in Model.ReportData)
-            {
-                <tr>
-                    <td>@c.FullName</td>
-                    <td>@c.SalesCount</td>
-                    <td>@c.TotalSpent.ToString("C2")</td>
-                    <td>@c.AvgTicket.ToString("C2")</td>
-                    <td>@c.LastSale?.ToString("yyyy-MM-dd")</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 }
