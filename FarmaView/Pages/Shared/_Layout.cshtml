@@ -32,7 +32,7 @@
                 </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navmenu"
-                        aria-controls="navmenu" aria-expanded="false" aria-label="Toggle navigation">
+                                    aria-controls="navmenu" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
@@ -48,10 +48,24 @@
                             <li class="nav-item"><a class="nav-link text-white fw-semibold" asp-page="/Users/Index">Usuarios</a></li>
                         }
 
+<<<<<<< HEAD
                         <li class="nav-item"><a class="nav-link text-white fw-semibold" asp-page="/Client/IndexClient">Clientes</a></li>
                         <li class="nav-item"><a class="nav-link text-white fw-semibold" asp-page="/Lots/Index">Lotes</a></li>
                         <li class="nav-item"><a class="nav-link text-white fw-semibold" asp-page="/Provider/IndexProvider">Proveedores</a></li>
                         <li class="nav-item"><a class="nav-link text-white fw-semibold" asp-page="/Reports/Index">Reportes</a></li>
+=======
+                        <li class="nav-item">
+                            <a class="nav-link text-white fw-semibold" asp-page="/Client/IndexClient">Clientes</a>
+                        </li>
+                        <li class="nav-item"><a class="nav-link text-white fw-semibold" asp-page="/Lots/Index">Lotes</a></li>
+                        <li class="nav-item"><a class="nav-link text-white fw-semibold" asp-page="/Providers/Index">Proveedores</a></li>
+
+                        @* La condición para Reportes: SOLO se muestra si NO es Cajero *@
+                        @if (currentRole != "Cajero")
+                        {
+                            <li class="nav-item"><a class="nav-link text-white fw-semibold" asp-page="/Reports/Index">Reportes</a></li>
+                        }
+>>>>>>> main
                     </ul>
 
                     <div class="d-flex align-items-center ms-3">
@@ -85,8 +99,8 @@
                         else
                         {
                             <a class="btn btn-outline-light rounded-pill px-3 fw-semibold"
-                               asp-page="/Auth/Login"
-                               asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)">
+                                               asp-page="/Auth/Login"
+                                               asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)">
                                 <i class="bi bi-box-arrow-in-right me-2"></i> Ingresar
                             </a>
                         }
